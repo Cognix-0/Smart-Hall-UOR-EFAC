@@ -16,10 +16,10 @@
   // Main links everyone sees, then the tools for the logged-in role
   const mainLinks = [['/', 'Timetable', 'calendar'], ['/availability', 'Free halls', 'pin'], ['/halls', 'Halls', 'building'], ['/chat', 'Ask SmartHall', 'chat']];
   const roleLinks = !user ? [] : user.role === 'admin'
-    ? [['/admin', 'Overview'], ['/timetable/manage', 'Timetable setup'], ['/bookings', 'Bookings'], ['/admin/batches', 'Batches'], ['/admin/slots', 'Time slots'], ['/admin/users', 'Users']]
+    ? [['/admin', 'Dashboard'], ['/timetable/manage', 'Timetable setup'], ['/bookings', 'Bookings'], ['/admin/batches', 'Batches'], ['/admin/slots', 'Time slots'], ['/admin/users', 'Users']]
     : user.role === 'rep'
-      ? [['/bookings/new', 'Book a hall'], ['/bookings', 'My bookings'], ['/timetable/manage', 'Edit my timetable']]
-      : [['/bookings/new', 'Book a hall'], ['/bookings', 'My bookings']];
+      ? [['/rep', 'Dashboard'], ['/timetable/manage', 'My Timetable'], ['/bookings/new', 'Book a hall'], ['/bookings', 'My bookings']]
+      : [['/president', 'Dashboard'], ['/bookings/new', 'Book a hall'], ['/bookings', 'My bookings']];
   const roleName = user && { admin: 'Admin', rep: 'Batch rep', president: user.society }[user.role];
   const here = 'aria-current="page"';
   const current = (href) => (href === '/' ? path === '/' : path === href || path.startsWith(href + '/')) ? here : '';

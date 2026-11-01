@@ -1,0 +1,158 @@
+<%- include('../partials/header') %>
+<%
+  const hhmm = (t) => t.slice(0, 5);
+  const whenText = !next ? '' : next.now ? 'On now'
+    : next.inDays === 0 ? 'Later today'
+    : next.inDays === 1 ? 'Tomorrow'
+    : DAYS[next.entry.day_of_week];
+%>
+
+<div class="role-banner rep-banner">
+  <div class="role-badge-row">
+    <span class="role-pill rep">Batch Representative</span>
+    <% if (batch) { %><span class="batch-pill">Batch <%= batch.name %></span><% } %>
+  </div>
+  <h1>Welcome, <%= user.name %></h1>
+  <p class="lead">Manage weekly lectures for <%= batch ? `Batch ${batch.name}` : 'your batch' %>, schedule extra revision classes, and track daily rooms.</p>
+</div>
+
+<div class="stats">
+  <div class="stat">
+    <strong><%= batch ? batch.student_count : '—' %></strong>
+    <span>Enrolled Students</span>
+  </div>
+  <a class="stat" href="/timetable/manage">
+    <strong><%= entries.length %></strong>
+    <span>Weekly Lectures</span>
+  </a>
+  <div class="stat <%= todayLectures.length ? 'attention' : '' %>">
+    <strong><%= todayLectures.length %></strong>
+    <span>Lectures Today</span>
+  </div>
+  <a class="stat" href="/bookings">
+    <strong><%= bookings.length %></strong>
+    <span>Extra Bookings</span>
+  </a>
+</div>
+
+<!-- Quick Action Shortcuts -->
+<div class="quick-actions-bar">
+  <a href="/timetable/manage" class="button">
+    <%- include('../partials/icon', { name: 'calendar' }) %> Edit My Timetable
+  </a>
+  <a href="/bookings/new" class="button quiet">
+    <%- include('../partials/icon', { name: 'building' }) %> Book Extra Lecture
+  </a>
+  <a href="/availability?min=<%= batch ? batch.student_count : 0 %>" class="button quiet">
+    <%- include('../partials/icon', { name: 'pin' }) %> Find Free Hall (<%= batch ? batch.student_count : 0 %>+ seats)
+  </a>
+  <% if (officialPdf) { %>
+    <a href="/timetables/<%= officialPdf.filename %>" target="_blank" class="button quiet pdf-download-btn">
+      <%- include('../partials/icon', { name: 'file' }) %> Official PDF Timetable
+    </a>
+  <% } %>
+</div>
+
+<div class="dashboard-grid">
+  <!-- Next Lecture Card -->
+  <article class="next-card <%= next && next.now ? 'is-now' : '' %>" aria-label="Your next lecture">
+    <% if (!next) { %>
+      <p class="next-when">Next Lecture</p>
+      <p class="next-empty"><%= batch ? `Batch ${batch.name} has no upcoming lectures today.` : 'No lectures found.' %></p>
+    <% } else { const e = next.entry; %>
+      <p class="next-when"><% if (next.now) { %><span class="live-dot"></span><% } %><%= whenText %>, <%= hhmm(e.start_time) %>–<%= hhmm(e.end_time) %></p>
+      <h2 class="next-subject"><%= e.subject %></h2>
+      <% if (e.hall_id) { %>
+        <div class="next-hall">
+          <a class="plate big" href="/halls/<%= e.hall_id %>"><%= e.short_code %></a>
+          <div>
+            <strong><%= e.hall_name %></strong>
+            <span><%= e.building %>, <%= e.floor %> floor</span>
+          </div>
+        </div>
+        <% if (e.directions) { %><p class="next-directions"><%- include('../partials/icon', { name: 'pin' }) %> <%= e.directions %></p><% } %>
+      <% } else { %>
+        <p class="next-empty">Hall unassigned. Use Edit Timetable to set a hall.</p>
+      <% } %>
+    <% } %>
+  </article>
+
+  <!-- Today's Schedule -->
+  <section class="panel">
+    <h2>Today's Schedule (<%= DAYS[new Date().getDay() || 7] %>)</h2>
+    <% if (!todayLectures.length) { %>
+      <p class="muted">No regular lectures scheduled for today.</p>
+    <% } else { %>
+      <ul class="schedule-list">
+        <% todayLectures.forEach(l => { %>
+          <li class="schedule-item">
+            <span class="schedule-time"><%= hhmm(l.start_time) %>–<%= hhmm(l.end_time) %></span>
+            <div class="schedule-info">
+              <strong><%= l.subject %></strong>
+              <% if (l.hall_id) { %>
+                <span class="muted"><%- include('../partials/plate', { hall: { id: l.hall_id, short_code: l.short_code } }) %> <%= l.building %></span>
+              <% } else { %>
+                <span class="tag pending">No hall yet</span>
+              <% } %>
+            </div>
+          </li>
+        <% }) %>
+      </ul>
+    <% } %>
+  </section>
+</div>
+
+<!-- Recent Bookings for this Batch -->
+<section class="panel" style="margin-top: 24px;">
+  <div class="panel-head">
+    <h2>Extra Lectures & Batch Bookings</h2>
+    <a href="/bookings/new" class="button quiet small">+ Request Hall</a>
+  </div>
+  <% if (!bookings.length) { %>
+    <p class="muted">No extra bookings made for Batch <%= batch ? batch.name : '' %>. Need a hall for revision or makeup classes? Use the button above.</p>
+  <% } else { %>
+    <div class="table-wrap">
+      <table class="stack">
+        <thead><tr><th>Date & Time</th><th>Hall</th><th>Purpose</th><th>Status</th><th>Actions</th></tr></thead>
+        <tbody>
+          <% bookings.forEach(b => { %>
+            <tr>
+              <td data-label="Date & Time"><%= fmt.niceRange(b.start_at, b.end_at) %></td>
+              <td data-label="Hall"><%- include('../partials/plate', { hall: { id: b.hall_id, short_code: b.short_code } }) %></td>
+              <td data-label="Purpose"><%= b.purpose %></td>
+              <td data-label="Status"><span class="tag <%= b.status %>"><%= b.status %></span></td>
+              <td class="actions">
+                <a href="/bookings/<%= b.id %>/edit" class="action-btn edit">Edit</a>
+                <form method="post" action="/bookings/<%= b.id %>/delete" class="inline"
+                      data-confirm="Cancel this booking for <%= b.purpose %>?"
+                      data-confirm-title="Cancel Booking"
+                      data-confirm-button="Cancel Booking">
+                  <button class="action-btn delete">Cancel</button>
+                </form>
+              </td>
+            </tr>
+          <% }) %>
+        </tbody>
+      </table>
+    </div>
+  <% } %>
+</section>
+
+<!-- Halls suitable for this batch -->
+<section class="panel" style="margin-top: 24px;">
+  <h2>Halls Sized for Batch <%= batch ? batch.name : '' %> (<%= batch ? batch.student_count : 0 %>+ seats)</h2>
+  <p class="muted">These venues meet or exceed your batch capacity and will auto-confirm for extra lectures when free.</p>
+  <div class="halls-pill-grid">
+    <% fittingHalls.forEach(h => { %>
+      <div class="hall-capacity-card">
+        <%- include('../partials/plate', { hall: h }) %>
+        <div>
+          <strong><%= h.name %></strong>
+          <span class="muted"><%= h.capacity %> seats &bull; <%= h.building %>, <%= h.floor %> fl</span>
+        </div>
+      </div>
+    <% }) %>
+  </div>
+</section>
+
+<%- include('../partials/footer') %>

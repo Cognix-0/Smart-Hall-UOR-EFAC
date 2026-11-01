@@ -1,13 +1,39 @@
 <%- include('../partials/header') %>
-<h1>Good to see you, <%= user.name %></h1>
-<p class="lead">Here is what needs your attention.</p>
+
+<div class="role-banner admin-banner">
+  <div class="role-badge-row">
+    <span class="role-pill admin">System Administrator</span>
+    <span class="batch-pill">Full Faculty Control</span>
+  </div>
+  <h1>Welcome, <%= user.name %></h1>
+  <p class="lead">Campus control center: auto-allocate halls, manage master schedules, approve society bookings, and configure cohorts.</p>
+</div>
 
 <div class="stats">
-  <a class="stat <%= counts.pending ? 'attention' : '' %>" href="/bookings?status=pending"><strong><%= counts.pending %></strong><span>bookings waiting for you</span></a>
-  <a class="stat <%= counts.unplaced ? 'attention' : '' %>" href="/timetable/manage"><strong><%= counts.unplaced %></strong><span>lectures without a hall</span></a>
+  <a class="stat <%= counts.pending ? 'attention' : '' %>" href="/bookings?status=pending"><strong><%= counts.pending %></strong><span>bookings waiting review</span></a>
+  <a class="stat <%= counts.unplaced ? 'attention' : '' %>" href="/timetable/manage"><strong><%= counts.unplaced %></strong><span>unplaced lectures</span></a>
   <a class="stat" href="/timetable/manage"><strong><%= counts.lectures %></strong><span>weekly lectures</span></a>
   <a class="stat" href="/halls"><strong><%= counts.halls %></strong><span>halls</span></a>
   <a class="stat" href="/admin/batches"><strong><%= counts.batches %></strong><span>batches</span></a>
+</div>
+
+<!-- Quick Action Shortcuts -->
+<div class="quick-actions-bar">
+  <a href="/timetable/manage" class="button">
+    <%- include('../partials/icon', { name: 'calendar' }) %> Timetable Setup
+  </a>
+  <a href="/admin/batches" class="button quiet">
+    <%- include('../partials/icon', { name: 'building' }) %> Batches & Counts
+  </a>
+  <a href="/admin/slots" class="button quiet">
+    <%- include('../partials/icon', { name: 'clock' }) %> Time Slots
+  </a>
+  <a href="/admin/users" class="button quiet">
+    <%- include('../partials/icon', { name: 'login' }) %> User Directory
+  </a>
+  <a href="/halls" class="button quiet">
+    <%- include('../partials/icon', { name: 'building' }) %> Campus Halls
+  </a>
 </div>
 
 <% if (counts.unplaced) { %>

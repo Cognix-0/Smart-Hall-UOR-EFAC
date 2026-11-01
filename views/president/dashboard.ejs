@@ -1,0 +1,153 @@
+<%- include('../partials/header') %>
+
+<div class="role-banner president-banner">
+  <div class="role-badge-row">
+    <span class="role-pill president">Society President</span>
+    <span class="batch-pill"><%= society %></span>
+  </div>
+  <h1>Welcome, <%= user.name %></h1>
+  <p class="lead">Book campus halls for <%= society %> events, upload signed permission letters, and track instant AI verification decisions.</p>
+</div>
+
+<div class="stats">
+  <div class="stat">
+    <strong><%= counts.total %></strong>
+    <span>Total Bookings</span>
+  </div>
+  <a class="stat <%= counts.approved ? 'success-stat' : '' %>" href="/bookings?status=approved">
+    <strong><%= counts.approved %></strong>
+    <span>Confirmed Events</span>
+  </a>
+  <a class="stat <%= counts.pending ? 'attention' : '' %>" href="/bookings?status=pending">
+    <strong><%= counts.pending %></strong>
+    <span>Pending Review</span>
+  </a>
+  <a class="stat <%= counts.rejected ? 'danger-stat' : '' %>" href="/bookings?status=rejected">
+    <strong><%= counts.rejected %></strong>
+    <span>Rejected</span>
+  </a>
+</div>
+
+<!-- Quick Action Shortcuts -->
+<div class="quick-actions-bar">
+  <a href="/bookings/new" class="button">
+    <%- include('../partials/icon', { name: 'file' }) %> Book Hall (Upload Letter)
+  </a>
+  <a href="/availability" class="button quiet">
+    <%- include('../partials/icon', { name: 'pin' }) %> Check Venue Availability
+  </a>
+  <a href="/halls" class="button quiet">
+    <%- include('../partials/icon', { name: 'building' }) %> Explore Faculty Halls
+  </a>
+</div>
+
+<!-- AI Letter Approval Guidelines -->
+<section class="panel letter-tips-card">
+  <h2><%- include('../partials/icon', { name: 'chat' }) %> AI Permission Letter Approval Guidelines</h2>
+  <p class="muted">SmartHall AI uses multimodal Claude Opus to inspect your uploaded PDF or image permission letter instantly. To pass without administrative delay, ensure your letter includes:</p>
+  <div class="guidelines-grid">
+    <div class="tip-item">
+      <strong>1. Addressed Correctly</strong>
+      <span>Must be addressed to the <em>Deputy Registrar, Faculty of Engineering</em>.</span>
+    </div>
+    <div class="tip-item">
+      <strong>2. Counselor Endorsement</strong>
+      <span>Sent <em>"Through: Senior Staff Counselor"</em> (an academic staff member).</span>
+    </div>
+    <div class="tip-item">
+      <strong>3. Exact Society Name</strong>
+      <span>Letter must name <em>"<%= society %>"</em>.</span>
+    </div>
+    <div class="tip-item">
+      <strong>4. Venue Match</strong>
+      <span>Hall name or short code must match the room you choose in the form.</span>
+    </div>
+    <div class="tip-item">
+      <strong>5. Date & Time Coverage</strong>
+      <span>Times on the letter must completely cover the requested booking interval.</span>
+    </div>
+    <div class="tip-item">
+      <strong>6. Signatures Present</strong>
+      <span>Requester signature, Counselor signature, and Deputy Registrar approval note.</span>
+    </div>
+  </div>
+</section>
+
+<!-- Society Bookings Table -->
+<section class="panel" style="margin-top: 24px;">
+  <div class="panel-head">
+    <h2><%= society %> Event Reservations</h2>
+    <a href="/bookings/new" class="button small">+ New Reservation</a>
+  </div>
+  <% if (!bookings.length) { %>
+    <p class="muted">No event bookings requested yet. Click "+ New Reservation" to book a hall by attaching your approved permission letter.</p>
+  <% } else { %>
+    <div class="table-wrap">
+      <table class="stack">
+        <thead>
+          <tr>
+            <th>Date & Time</th>
+            <th>Hall</th>
+            <th>Event Purpose</th>
+            <th>Status</th>
+            <th>AI Verification Note</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% bookings.forEach(b => { %>
+            <tr>
+              <td data-label="Date & Time"><%= fmt.niceRange(b.start_at, b.end_at) %></td>
+              <td data-label="Hall"><%- include('../partials/plate', { hall: { id: b.hall_id, short_code: b.short_code } }) %></td>
+              <td data-label="Event Purpose"><%= b.purpose %></td>
+              <td data-label="Status">
+                <span class="tag <%= b.status %>"><%= b.status %></span>
+              </td>
+              <td data-label="AI Verification Note">
+                <% if (b.ai_reason) { %>
+                  <small class="ai-note"><%= b.ai_reason %></small>
+                <% } else if (b.status === 'pending') { %>
+                  <small class="muted">Awaiting manual admin review</small>
+                <% } else { %>
+                  <small class="muted">—</small>
+                <% } %>
+              </td>
+              <td class="actions">
+                <% if (b.letter_file) { %>
+                  <a href="/bookings/<%= b.id %>/letter" target="_blank" rel="noopener" class="action-btn edit" title="View uploaded letter">
+                    <%- include('../partials/icon', { name: 'file' }) %> Letter
+                  </a>
+                <% } %>
+                <form method="post" action="/bookings/<%= b.id %>/delete" class="inline"
+                      data-confirm="Cancel event reservation for '<%= b.purpose %>'?"
+                      data-confirm-title="Cancel Event Reservation"
+                      data-confirm-button="Cancel Reservation">
+                  <button class="action-btn delete" title="Cancel booking">Cancel</button>
+                </form>
+              </td>
+            </tr>
+          <% }) %>
+        </tbody>
+      </table>
+    </div>
+  <% } %>
+</section>
+
+<!-- Major Event Venues -->
+<section class="panel" style="margin-top: 24px;">
+  <h2>Large Venues for Society Events & Workshops</h2>
+  <p class="muted">Recommended venues for seminars, hackathons, and society annual general meetings.</p>
+  <div class="halls-pill-grid">
+    <% eventHalls.forEach(h => { %>
+      <div class="hall-capacity-card">
+        <%- include('../partials/plate', { hall: h }) %>
+        <div>
+          <strong><%= h.name %></strong>
+          <span class="muted"><%= h.capacity %> seats &bull; <%= h.building %>, <%= h.floor %> fl</span>
+        </div>
+      </div>
+    <% }) %>
+  </div>
+</section>
+
+<%- include('../partials/footer') %>

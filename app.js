@@ -34,6 +34,8 @@ app.use('/halls', require('./routes/halls'));
 app.use('/timetable', require('./routes/timetable'));
 app.use('/bookings', require('./routes/bookings'));
 app.use('/admin', require('./routes/admin'));
+app.use('/rep', require('./routes/rep'));
+app.use('/president', require('./routes/president'));
 
 app.use((req, res) => res.status(404).render('error', { title: 'Not found', message: 'That page does not exist.' }));
 app.use((err, req, res, next) => {

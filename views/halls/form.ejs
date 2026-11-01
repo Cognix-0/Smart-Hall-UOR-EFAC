@@ -1,0 +1,17 @@
+<%- include('../partials/header') %>
+<h1><%= title %></h1>
+<p class="lead">Students see the building, floor and directions when they look up a lecture.</p>
+<section class="panel narrow">
+  <% errors.forEach(e => { %><p class="error" role="alert"><%= e %></p><% }) %>
+  <form method="post" action="<%= hall.id ? '/halls/' + hall.id : '/halls' %>" enctype="multipart/form-data">
+    <label>Name <input name="name" value="<%= hall.name || '' %>" required maxlength="100" placeholder="e.g. Electrical Computer Centre"></label>
+    <label>Short code <span class="hint">Shown on the hall's sign, e.g. ECC</span><input name="short_code" value="<%= hall.short_code || '' %>" required maxlength="20"></label>
+    <label>Building <input name="building" value="<%= hall.building || '' %>" required maxlength="100"></label>
+    <label>Floor <input name="floor" value="<%= hall.floor || '' %>" required maxlength="20" placeholder="e.g. Ground, 1st"></label>
+    <label>Seats <input type="number" name="capacity" value="<%= hall.capacity || '' %>" required min="1"></label>
+    <label>Directions <span class="hint">One or two sentences on how to find it</span><textarea name="directions" maxlength="255" rows="2"><%= hall.directions || '' %></textarea></label>
+    <label>Photo <span class="hint">Optional, JPG or PNG</span><input type="file" name="photo" accept="image/jpeg,image/png"></label>
+    <div class="form-actions"><button><%= hall.id ? 'Save changes' : 'Add hall' %></button> <a href="/halls">Cancel</a></div>
+  </form>
+</section>
+<%- include('../partials/footer') %>

@@ -1,0 +1,82 @@
+<%- include('../partials/header') %>
+<div class="page-head">
+  <div>
+    <h1><%= title %></h1>
+    <p class="lead">
+      <% if (user.role === 'admin') { %>Every one-off booking. Approve pending ones, or revoke any booking that should not stand.
+      <% } else if (user.role === 'rep') { %>One-off bookings for your batch. Weekly lectures are in <a href="/timetable/manage">your timetable</a>.
+      <% } else { %>Your society's bookings and the result of each letter check.<% } %>
+    </p>
+  </div>
+  <% if (user.role !== 'admin') { %><a class="button" href="/bookings/new">Book a hall</a><% } %>
+</div>
+
+<form method="get" action="/bookings" class="filters">
+  <label>Status
+    <select name="status">
+      <option value="">All</option>
+      <% [['approved', 'Confirmed'], ['pending', 'Waiting for admin'], ['rejected', 'Rejected']].forEach(([v, t]) => { %><option value="<%= v %>" <%= query.status === v ? 'selected' : '' %>><%= t %></option><% }) %>
+    </select>
+  </label>
+  <label>Hall
+    <select name="hall">
+      <option value="">All</option>
+      <% halls.forEach(h => { %><option value="<%= h.id %>" <%= query.hall == h.id ? 'selected' : '' %>><%= h.short_code %></option><% }) %>
+    </select>
+  </label>
+  <label>On date <input type="date" name="date" value="<%= query.date || '' %>"></label>
+  <label>Order
+    <select name="sort">
+      <option value="">Latest date first</option>
+      <option value="oldest" <%= query.sort === 'oldest' ? 'selected' : '' %>>Earliest date first</option>
+      <option value="created" <%= query.sort === 'created' ? 'selected' : '' %>>Newest bookings first</option>
+    </select>
+  </label>
+  <button>Filter</button>
+  <% if (query.status || query.hall || query.date || query.sort) { %><a href="/bookings">Clear filters</a><% } %>
+</form>
+
+<% if (!bookings.length) { %>
+  <div class="panel empty">
+    <% if (query.status || query.hall || query.date) { %>No bookings match these filters.
+    <% } else if (user.role === 'admin') { %>No bookings yet.
+    <% } else { %>You have no bookings yet. Use Book a hall above to make one.<% } %>
+  </div>
+<% } else { %>
+<div class="table-wrap">
+<table class="stack">
+  <thead><tr><th>When</th><th>Hall</th><th>Purpose</th><th>Booked for</th><th>Status</th><th><span class="sr-only">Actions</span></th></tr></thead>
+  <tbody>
+  <% const STATUS = { approved: 'Confirmed', pending: 'Waiting for admin', rejected: 'Rejected' }; %>
+  <% bookings.forEach(b => { %>
+    <tr>
+      <td data-label="When"><%= fmt.niceRange(b.start_at, b.end_at) %></td>
+      <td data-label="Hall"><%- include('../partials/plate', { hall: { id: b.hall_id, short_code: b.short_code } }) %></td>
+      <td data-label="Purpose"><%= b.purpose %></td>
+      <td data-label="Booked for"><%= b.type === 'lecture' ? b.batch : b.society %><br><small class="muted">by <%= b.booked_by_name %></small></td>
+      <td data-label="Status">
+        <span class="tag <%= b.status %>"><%= STATUS[b.status] %></span>
+        <% if (b.type === 'society' && b.ai_reason) { %><small class="ai-note">Letter check: <%= b.ai_reason %></small><% } %>
+      </td>
+      <td class="actions">
+        <% if (b.letter_file) { %><a href="/bookings/<%= b.id %>/letter" target="_blank" rel="noopener" class="action-btn edit">View letter</a><% } %>
+        <% if (user.role === 'rep' && b.type === 'lecture') { %><a href="/bookings/<%= b.id %>/edit" class="action-btn edit">Edit</a><% } %>
+        <% if (user.role === 'admin') { %>
+          <% if (b.status !== 'approved') { %>
+            <form method="post" action="/bookings/<%= b.id %>/status" class="inline"><input type="hidden" name="status" value="approved"><button class="action-btn edit">Approve</button></form>
+          <% } %>
+          <% if (b.status !== 'rejected') { %>
+            <form method="post" action="/bookings/<%= b.id %>/status" class="inline" onsubmit="return confirm('<%= b.status === 'approved' ? 'Revoke' : 'Reject' %> this booking? The hall becomes free again.')"><input type="hidden" name="status" value="rejected"><button class="action-btn delete"><%= b.status === 'approved' ? 'Revoke' : 'Reject' %></button></form>
+          <% } %>
+        <% } %>
+        <form method="post" action="/bookings/<%= b.id %>/delete" class="inline" onsubmit="return confirm('Delete this booking? This cannot be undone.')">
+          <button class="action-btn delete">Delete</button>
+        </form>
+      </td>
+    </tr>
+  <% }) %>
+  </tbody>
+</table>
+</div>
+<% } %>
+<%- include('../partials/footer') %>

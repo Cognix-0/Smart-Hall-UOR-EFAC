@@ -1,0 +1,30 @@
+<%- include('../partials/header') %>
+<div class="page-head">
+  <div class="hall-head">
+    <span class="plate big"><%= hall.short_code %></span>
+    <h1><%= hall.name %></h1>
+  </div>
+  <% if (user && user.role === 'admin') { %><a class="button quiet" href="/halls/<%= hall.id %>/edit">Edit hall</a>
+  <% } else if (user) { %><a class="button" href="/bookings/new?hall=<%= hall.id %>">Book this hall</a><% } %>
+</div>
+
+<section class="panel hall-info">
+  <dl>
+    <dt>Building</dt><dd><%= hall.building %></dd>
+    <dt>Floor</dt><dd><%= hall.floor %></dd>
+    <dt>Seats</dt><dd><%= hall.capacity %></dd>
+    <% if (hall.directions) { %><dt>How to get there</dt><dd><%= hall.directions %></dd><% } %>
+  </dl>
+  <% if (hall.photo) { %><img src="/photos/<%= hall.photo %>" alt="<%= hall.name %>"><% } %>
+</section>
+
+<h2>Every week</h2>
+<% if (!lectures.length) { %><p class="muted">No weekly lectures in this hall.</p><% } else { %>
+<ul class="plain-list"><% lectures.forEach(l => { %><li><strong><%= DAYS[l.day_of_week] %> <%= l.label %></strong>, <%= l.batch %> <%= l.subject %></li><% }) %></ul>
+<% } %>
+
+<h2>Coming up</h2>
+<% if (!bookings.length) { %><p class="muted">No bookings coming up.</p><% } else { %>
+<ul class="plain-list"><% bookings.forEach(b => { %><li><strong><%= fmt.niceRange(b.start_at, b.end_at) %></strong>, <%= b.purpose %><%= b.status === 'pending' ? ' (waiting for admin)' : '' %></li><% }) %></ul>
+<% } %>
+<%- include('../partials/footer') %>

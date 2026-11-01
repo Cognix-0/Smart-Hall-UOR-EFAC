@@ -1,0 +1,110 @@
+<%- include('../partials/header') %>
+<% const isRep = user.role === 'rep'; %>
+<h1><%= title %></h1>
+<p class="lead">
+  <% if (isRep) { %>Choose a date and time first. The hall list then shows which halls are free and big enough for your batch (<%= batchSize %> students). Your booking is confirmed straight away.
+  <% } else { %>Upload your letter after it is signed by you and your counselor and approved by the Deputy Registrar. It is checked automatically, and if it passes your booking is confirmed straight away.<% } %>
+</p>
+
+<section class="panel narrow">
+  <% if (error) { %><p class="error" role="alert"><%= error %></p><% } %>
+
+  <form method="post" id="booking-form" data-count="<%= isRep ? batchSize : 0 %>" data-ignore="<%= booking.id || '' %>"
+        action="<%= booking.id ? '/bookings/' + booking.id : '/bookings' %>" <%- isRep ? '' : 'enctype="multipart/form-data"' %>>
+    <% if (isRep) { %>
+      <label>Date <input type="date" name="date" value="<%= booking.date || '' %>" min="<%= fmt.today() %>" required></label>
+      <label>Time
+        <select name="time_slot_id" required>
+          <% slots.forEach(s => { %><option value="<%= s.id %>" data-start="<%= s.start_time %>" data-end="<%= s.end_time %>" <%= s.id == booking.time_slot_id ? 'selected' : '' %>><%= s.label %></option><% }) %>
+        </select>
+      </label>
+    <% } else { %>
+      <label>Starts <input type="datetime-local" name="start_at" value="<%= booking.start_at || '' %>" required></label>
+      <label>Ends <span class="hint">Events can run past midnight.</span><input type="datetime-local" name="end_at" value="<%= booking.end_at || '' %>" required></label>
+    <% } %>
+
+    <label>Hall
+      <select name="hall_id" required>
+        <% halls.forEach(h => { const label = `${h.short_code}, ${h.name}, ${h.capacity} seats`; %>
+          <option value="<%= h.id %>" data-label="<%= label %>" <%= h.id == booking.hall_id ? 'selected' : '' %>><%= label %></option>
+        <% }) %>
+      </select>
+    </label>
+    <p class="hall-status" id="hall-status" aria-live="polite"></p>
+
+    <label>Purpose <input name="purpose" value="<%= booking.purpose || '' %>" required maxlength="255"
+      placeholder="<%= isRep ? 'e.g. EE4307 extra lecture' : 'e.g. IEEEXtreme 20.0 competition' %>"></label>
+
+    <% if (!isRep) { %>
+      <label>Signed permission letter <span class="hint">PDF, JPG or PNG, up to 5 MB</span>
+        <input type="file" name="letter" accept="application/pdf,image/jpeg,image/png" required>
+      </label>
+    <% } %>
+
+    <div class="form-actions">
+      <button id="submit"><%= booking.id ? 'Save changes' : isRep ? 'Book hall' : 'Check letter and book' %></button>
+      <a href="/bookings">Cancel</a>
+    </div>
+  </form>
+</section>
+
+<script>
+  // Marks each hall free / booked / too small for the chosen time, before the form is sent
+  const form = document.getElementById('booking-form');
+  const hallSelect = form.hall_id;
+  const statusLine = document.getElementById('hall-status');
+  const WORDS = { free: 'free', booked: 'booked', small: 'too small' };
+  let results = {};
+
+  function chosenTimes() {
+    if (form.date) {
+      const slot = form.time_slot_id.selectedOptions[0];
+      if (!form.date.value || !slot) return null;
+      return { start: `${form.date.value} ${slot.dataset.start}`, end: `${form.date.value} ${slot.dataset.end}` };
+    }
+    if (!form.start_at.value || !form.end_at.value) return null;
+    return { start: form.start_at.value, end: form.end_at.value };
+  }
+
+  function showSelected() {
+    const r = results[hallSelect.value];
+    statusLine.className = 'hall-status ' + (r ? r.status : '');
+    statusLine.textContent = !r ? ''
+      : r.status === 'free' ? 'This hall is free then.'
+      : r.status === 'small' ? 'This hall is too small for your batch.'
+      : r.reason;
+  }
+
+  async function refresh() {
+    const t = chosenTimes();
+    results = {};
+    if (t) {
+      const q = new URLSearchParams({ ...t, count: form.dataset.count, ignore: form.dataset.ignore });
+      try {
+        const data = await (await fetch('/free-halls?' + q)).json();
+        data.halls.forEach((h) => { results[h.id] = h; });
+      } catch { /* the server still checks on submit */ }
+    }
+    for (const opt of hallSelect.options) {
+      const r = results[opt.value];
+      opt.textContent = opt.dataset.label + (r ? ` (${WORDS[r.status]})` : '');
+    }
+    showSelected();
+  }
+
+  form.addEventListener('change', (e) => (e.target === hallSelect ? showSelected() : refresh()));
+  refresh();
+
+  form.addEventListener('submit', (e) => {
+    if (form.end_at && form.end_at.value <= form.start_at.value) {
+      e.preventDefault();
+      statusLine.className = 'hall-status booked';
+      statusLine.textContent = 'The end time must be after the start time.';
+      return;
+    }
+    const button = document.getElementById('submit');
+    button.disabled = true;
+    button.textContent = form.letter ? 'Checking your letter (up to a minute)…' : 'Saving…';
+  });
+</script>
+<%- include('../partials/footer') %>

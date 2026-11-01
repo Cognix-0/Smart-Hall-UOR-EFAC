@@ -1,0 +1,50 @@
+<%- include('../partials/header') %>
+<div class="page-head">
+  <div>
+    <h1>Halls</h1>
+    <p class="lead">Every lecture hall, how many it seats, and how to find it.</p>
+  </div>
+  <% if (user && user.role === 'admin') { %><a class="button" href="/halls/new">Add hall</a><% } %>
+</div>
+<form method="get" action="/halls" class="filters">
+  <label>Search <input name="q" value="<%= query.q || '' %>" placeholder="Name, code or building"></label>
+  <label>At least <input type="number" name="min" min="0" value="<%= query.min || '' %>" placeholder="seats" style="width:7em"></label>
+  <label>Order
+    <select name="sort">
+      <option value="name">Name</option>
+      <option value="capacity" <%= query.sort === 'capacity' ? 'selected' : '' %>>Most seats first</option>
+      <option value="building" <%= query.sort === 'building' ? 'selected' : '' %>>Building</option>
+    </select>
+  </label>
+  <button>Search</button>
+  <% if (query.q || query.min || query.sort) { %><a href="/halls">Clear</a><% } %>
+</form>
+
+<% if (!halls.length) { %>
+  <div class="panel empty"><%= query.q || query.min ? 'No halls match your search.' : 'No halls yet.' %></div>
+<% } else { %>
+<div class="table-wrap">
+<table class="stack">
+  <thead><tr><th>Hall</th><th>Name</th><th>Seats</th><th><span class="sr-only">Actions</span></th></tr></thead>
+  <tbody>
+  <% halls.forEach(h => { %>
+    <tr>
+      <td data-label="Hall"><%- include('../partials/plate', { hall: h }) %></td>
+      <td data-label="Name"><a href="/halls/<%= h.id %>"><%= h.name %></a></td>
+      <td data-label="Seats"><%= h.capacity %></td>
+      <td class="actions">
+        <% if (user && user.role === 'admin') { %>
+          <a href="/halls/<%= h.id %>/edit" class="action-btn edit">Edit</a>
+          <form method="post" action="/halls/<%= h.id %>/delete" class="inline"
+                onsubmit="return confirm('Delete hall <%= h.name %>? Its bookings are deleted and its lectures lose their hall.')">
+            <button class="action-btn delete">Delete</button>
+          </form>
+        <% } else if (user) { %><a href="/bookings/new?hall=<%= h.id %>" class="action-btn edit">Book</a><% } %>
+      </td>
+    </tr>
+  <% }) %>
+  </tbody>
+</table>
+</div>
+<% } %>
+<%- include('../partials/footer') %>

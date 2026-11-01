@@ -266,17 +266,5 @@ To prevent accidental deletions without relying on browser-native `confirm()` po
 
 ---
 
-## 9. Verification & Testing Results
-
-SmartHall AI includes built-in unit tests verifying core algorithms:
-- `campus board shows what is in each hall now and next`: **PASS**
-- `next lecture: on now, later today, or a later day`: **PASS**
-- `chatbot reads date, time and count`: **PASS**
-- `allocation picks the smallest hall that fits and reports clashes`: **PASS**
-- `fixed lectures clash only on their weekday and time`: **PASS**
-- **Test Suite Status:** 5/5 Passed (100% success rate, 0 cancellations, 0 failures).
-
----
-
-## 10. Conclusion
+## 9. Conclusion
 SmartHall AI demonstrates how modern, lightweight web technologies and targeted AI integrations can solve real-world logistical bottlenecks in higher education institutions. By harmonizing algorithmic allocation, automated document parsing, multimodal AI verification, dedicated role-based interfaces, and an intentional user interface, the system provides the Faculty of Engineering, University of Ruhuna, with a dependable, state-of-the-art campus infrastructure management platform.

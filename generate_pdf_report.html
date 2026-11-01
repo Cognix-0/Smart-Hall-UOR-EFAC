@@ -853,65 +853,10 @@
     <li><strong>Universal Safeguard:</strong> Protects timetable entries, batches, time slots, campus halls, bookings, and semester resets.</li>
   </ul>
 
-  <h1><span class="sec-num">09.</span> Verification & Automated Test Suite</h1>
+  <h1><span class="sec-num">09.</span> Conclusion</h1>
   <p>
-    SmartHall AI includes a comprehensive Node.js native test suite (<code>node --test</code>) in <code>test/logic.test.js</code>:
+    SmartHall AI demonstrates how modern, lightweight web technologies and targeted AI integrations can solve real-world logistical bottlenecks in higher education institutions. By harmonizing algorithmic allocation, automated document parsing, multimodal AI verification, dedicated role-based interfaces, and an intentional user interface, the system provides the Faculty of Engineering, University of Ruhuna, with a dependable, state-of-the-art campus infrastructure management platform.
   </p>
-  <table>
-    <thead>
-      <tr>
-        <th>Test Case Description</th>
-        <th>Target Component</th>
-        <th>Result</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr>
-        <td>Campus board displays active event & upcoming lecture per hall</td>
-        <td><code>src/board.js</code> (hallBoard)</td>
-        <td><span class="badge success">PASS (0.32ms)</span></td>
-      </tr>
-      <tr>
-        <td>Next lecture correctly classifies "on now", "later today", "tomorrow"</td>
-        <td><code>src/board.js</code> (nextLecture)</td>
-        <td><span class="badge success">PASS (0.49ms)</span></td>
-      </tr>
-      <tr>
-        <td>Chatbot natural language reader extracts date, time, and student count</td>
-        <td><code>src/chatbot.js</code> (parseQuestion)</td>
-        <td><span class="badge success">PASS (1.05ms)</span></td>
-      </tr>
-      <tr>
-        <td>Allocation selects smallest fitting hall and isolates unplaced clashes</td>
-        <td><code>src/allocate.js</code> (allocate)</td>
-        <td><span class="badge success">PASS (0.14ms)</span></td>
-      </tr>
-      <tr>
-        <td>Fixed lectures clash only on identical weekday and time slot</td>
-        <td><code>src/clash.js</code> (fixedClashes)</td>
-        <td><span class="badge success">PASS (0.09ms)</span></td>
-      </tr>
-    </tbody>
-  </table>
-  <p><strong>Test Suite Summary:</strong> 5 suites, 5 passing, 0 failing, 0 canceled. Execution duration: ~71ms.</p>
-
-  <div class="signoff-box avoid-break">
-    <div>
-      <strong>Candidate Declaration:</strong><br>
-      <span style="font-size: 8.5pt; color: #475569;">
-        I hereby confirm that this project and report represent original engineering work developed for the EC4307 Web Application Development module at the Faculty of Engineering, University of Ruhuna.
-      </span>
-      <div class="signoff-line">D.M.S.N.H. Dissanayake &bull; EG/2022/5574</div>
-    </div>
-    <div>
-      <strong>Department Endorsement:</strong><br>
-      <span style="font-size: 8.5pt; color: #475569;">
-        Department of Electrical and Information Engineering<br>
-        Faculty of Engineering, University of Ruhuna
-      </span>
-      <div class="signoff-line">Module Coordinator &bull; EC4307</div>
-    </div>
-  </div>
 
 </body>
 </html>

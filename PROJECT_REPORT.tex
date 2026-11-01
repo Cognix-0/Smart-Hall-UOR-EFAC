@@ -313,43 +313,7 @@ Rather than relying on browser-native \texttt{window.confirm()} popups (which ar
     \item \textbf{Universal Safeguard:} Protects timetable entries, batches, time slots, campus halls, bookings, and semester resets.
 \end{itemize}
 
-\section{Verification \& Automated Test Suite}
-SmartHall AI includes a comprehensive Node.js native test suite (\texttt{node --test}) in \texttt{test/logic.test.js}:
-\begin{table}[H]
-    \centering
-    \caption{Automated Unit Test Results}
-    \begin{tabular}{llr}
-        \toprule
-        \textbf{Test Case Description} & \textbf{Target Component} & \textbf{Status} \\
-        \midrule
-        Campus board displays active event \& upcoming lecture per hall & \texttt{src/board.js} & \textbf{PASS (0.32ms)} \\
-        Next lecture correctly classifies "on now", "later today", "tomorrow" & \texttt{src/board.js} & \textbf{PASS (0.49ms)} \\
-        Chatbot natural language reader extracts date, time, and count & \texttt{src/chatbot.js} & \textbf{PASS (1.05ms)} \\
-        Allocation selects smallest fitting hall and isolates unplaced clashes & \texttt{src/allocate.js} & \textbf{PASS (0.14ms)} \\
-        Fixed lectures clash only on identical weekday and time slot & \texttt{src/clash.js} & \textbf{PASS (0.09ms)} \\
-        \bottomrule
-    \end{tabular}
-\end{table}
-\noindent \textbf{Test Suite Summary:} 5/5 passed (100\% success rate, 0 failures, 0 canceled).
-
 \section{Conclusion}
 SmartHall AI demonstrates how modern, lightweight web technologies and targeted AI integrations can solve real-world logistical bottlenecks in higher education institutions. By harmonizing algorithmic allocation, automated document parsing, multimodal AI verification, dedicated role-based interfaces, and an intentional user interface, the system provides the Faculty of Engineering, University of Ruhuna, with a dependable, state-of-the-art campus infrastructure management platform.
-
-\vspace{1.5cm}
-\noindent
-\begin{minipage}[t]{0.48\textwidth}
-    \textbf{Candidate Declaration:}\\[0.2cm]
-    \small I hereby confirm that this project and report represent original engineering work developed for the EC4307 Web Application Development module at the Faculty of Engineering, University of Ruhuna.\\[1cm]
-    \rule{0.8\textwidth}{0.5pt}\\
-    \textbf{D.M.S.N.H. Dissanayake} $\cdot$ EG/2022/5574
-\end{minipage}
-\hfill
-\begin{minipage}[t]{0.48\textwidth}
-    \textbf{Department Endorsement:}\\[0.2cm]
-    \small Department of Electrical and Information Engineering\\
-    Faculty of Engineering, University of Ruhuna\\[1cm]
-    \rule{0.8\textwidth}{0.5pt}\\
-    \textbf{Module Coordinator} $\cdot$ EC4307
-\end{minipage}
 
 \end{document}

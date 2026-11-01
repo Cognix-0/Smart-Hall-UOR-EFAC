@@ -85,7 +85,20 @@ To prevent human error and racial conditions in concurrent environments, SmartHa
 ## 4. Distinctive & Advanced Engineering Features
 
 ### 4.1 Algorithmic Hall Auto-Allocation (`src/allocate.js`)
-When an administrator uploads a master timetable CSV or PDF without pre-assigned venues, the auto-allocation engine assigns the most optimal hall for every lecture:
+When an administrator uploads a master timetable CSV or PDF without pre-assigned venues, the auto-allocation engine assigns the most optimal hall for every lecture. This is formulated as a constrained combinatorial optimization problem:
+
+$$\min \sum_{e \in E} \sum_{h \in H} x_{e, h} \cdot \Big( K(h) - c(e) \Big)$$
+
+$$\text{subject to:}$$
+1. **Capacity Feasibility:** 
+   $$x_{e, h} = 1 \implies K(h) \ge c(e), \quad \forall e \in E, \; \forall h \in H$$
+2. **Conflict Prevention (No Double Bookings):**
+   $$\sum_{e \in E : d(e)=d, s(e)=s} x_{e, h} \le A(h, d, s), \quad \forall h \in H, \; \forall d \in \{1,\dots,5\}, \; \forall s \in S$$
+3. **Unitary Assignment:**
+   $$\sum_{h \in H} x_{e, h} \le 1, \quad \forall e \in E$$
+
+where $E$ is the set of unplaced lectures, $H$ is the set of campus lecture halls, $K(h)$ is the hall capacity, $c(e)$ is the cohort headcount, and $A(h, d, s) \in \{0, 1\}$ denotes binary hall availability at day $d$ and time slot $s$.
+
 1. **Sorting by Constraints:** Batches are sorted in descending order of student count to place the largest classes first where venue choices are most constrained.
 2. **Best-Fit Heuristic:** The algorithm identifies the smallest available hall whose capacity $\ge$ batch student headcount, preventing smaller batches from needlessly occupying the 400-seat Auditorium or 250-seat MLT.
 3. **Clash Avoidance:** Cross-references the taken slots matrix and returns a comprehensive allocation report highlighting any unplaced lectures.
@@ -200,6 +213,9 @@ Admin Dashboard (/admin)    Batch Workspace (/rep)    Society Portal (/president
   5. **New Semester Reset Tool:** Modal-protected utility for wiping expired timetable schedules selectively per batch or across the faculty.
   6. **Booking Approval Pipeline:** Direct review of society requests with AI permission letter verification summaries.
 
+![Figure 7.1: Faculty Administrator Control Center](report_assets/screenshots/admin_dashboard.png)
+*Figure 7.1: Faculty Administrator Control Center (`/admin`) displaying active live stat tiles, pending approvals, and administrative shortcuts.*
+
 ### 7.2 Batch Representative Workspace (`/rep`)
 - **Target Persona:** Elected Undergraduate Cohort Representatives, e.g., E21 / E22 Reps (`rep.e21@smarthall.test`).
 - **Visual Identity:** Royal blue accent header (`.role-banner.rep-banner`) displaying `BATCH REPRESENTATIVE` and batch identification badge (e.g., `Batch 25 (E21)`).
@@ -214,6 +230,9 @@ Admin Dashboard (/admin)    Batch Workspace (/rep)    Society Portal (/president
   4. **Matching Campus Halls:** Automatically filters and displays only halls that physically fit the batch's headcount (capacity $\ge$ student count), preventing reps from requesting undersized rooms.
   5. **Batch Timetable Grid:** Scoped weekly schedule view dedicated exclusively to their cohort.
 
+![Figure 7.2: Batch Representative Workspace](report_assets/screenshots/rep_dashboard.png)
+*Figure 7.2: Batch Representative Workspace (`/rep`) showing enrolled cohort strength (210 students), today's lecture schedule, live next lecture indicator, and fitting halls.*
+
 ### 7.3 Society President Portal (`/president`)
 - **Target Persona:** Student Organization Leaders, e.g., IEEE Student Branch, Mechanical Engineering Society (`ieee@smarthall.test`).
 - **Visual Identity:** University gold accent header (`.role-banner.president-banner`) displaying `SOCIETY PRESIDENT` and organization badge (e.g., `IEEE Student Branch`).
@@ -223,6 +242,9 @@ Admin Dashboard (/admin)    Batch Workspace (/rep)    Society Portal (/president
   3. **AI Letter Compliance Guidelines:** Interactive guidance card grid explaining the 6 verification rules required by Claude Opus (Official Letterhead, Dean/AR Addressee, Senior Treasurer Endorsement, Accurate Date/Time matching, and Visual Signatures).
   4. **Society Booking History & AI Decision Logs:** Audit table listing upcoming society events with live status badges and detailed AI decision notes explaining why requests were approved or flagged.
   5. **Auditoriums & Large Gathering Spaces:** Dedicated showcase cards for large event venues (MLT, Faculty Auditorium, Drawing Office) with seating capacities and sound system amenities.
+
+![Figure 7.3: Society President Portal](report_assets/screenshots/president_portal.png)
+*Figure 7.3: Society President Portal (`/president`) featuring event reservation metrics, AI permission letter compliance guidelines, and large auditorium showcase.*
 
 ### 7.4 Dynamic Role-Tailored Navigation
 The application header partial (`views/partials/header.ejs`) dynamically restructures its navigation links based on session authentication:

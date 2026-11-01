@@ -244,6 +244,55 @@
     .pill-tag.rep { background: #e0f2fe; color: #0369a1; }
     .pill-tag.president { background: #fef3c7; color: #b45309; }
 
+    /* Screenshot Figures */
+    .screenshot-figure {
+      margin: 10px 0 14px;
+      border: 1px solid #cbd5e1;
+      border-radius: 8px;
+      overflow: hidden;
+      background: #0f1117;
+      box-shadow: 0 3px 6px -1px rgba(0, 0, 0, 0.08);
+      break-inside: avoid;
+    }
+    .screenshot-figure img {
+      width: 100%;
+      height: auto;
+      max-height: 380px;
+      object-fit: cover;
+      object-position: top;
+      display: block;
+    }
+    .screenshot-caption {
+      padding: 6px 12px;
+      background: #f8fafc;
+      border-top: 1px solid #e2e8f0;
+      font-size: 8pt;
+      color: #64748b;
+      font-weight: 500;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .screenshot-caption strong {
+      color: #0f172a;
+    }
+
+    /* Math Box */
+    .math-box {
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-left: 4px solid #7b1e33;
+      border-radius: 6px;
+      padding: 10px 14px;
+      margin: 12px 0;
+      font-family: 'JetBrains Mono', Consolas, monospace;
+      font-size: 8.5pt;
+      color: #0f172a;
+      line-height: 1.5;
+      break-inside: avoid;
+    }
+    .math-box strong { color: #7b1e33; display: block; margin-bottom: 4px; font-family: 'Inter', sans-serif; font-size: 8.5pt; text-transform: uppercase; letter-spacing: 0.5px; }
+
     /* Cards & Boxes */
     .callout {
       border-left: 4px solid #7b1e33;
@@ -610,8 +659,21 @@
   <h1><span class="sec-num">05.</span> Advanced Engineering & Innovations</h1>
   <h2>5.1 Algorithmic Best-Fit Auto-Allocation</h2>
   <p>
-    Master timetable CSVs or PDFs often arrive without hall assignments. SmartHall AI's auto-allocation algorithm (<code>src/allocate.js</code>) treats hall allocation as a constrained optimization problem:
+    Master timetable CSVs or PDFs often arrive without hall assignments. SmartHall AI's auto-allocation algorithm (<code>src/allocate.js</code>) treats hall allocation as a constrained combinatorial optimization problem:
   </p>
+
+  <div class="math-box">
+    <strong>Formal Mathematical Model (Constrained Best-Fit Allocation)</strong>
+    Let &Escr; be the set of unplaced lectures, where each entry e &isin; &Escr; has day d(e), time slot s(e), and batch headcount c(e).<br>
+    Let &Hscr; be the set of halls with capacities K(h) and binary availability A(h, d, s) &isin; {0, 1}.<br><br>
+    &bull; <strong>Objective Function:</strong> &nbsp;&nbsp; min &sum;<sub>e &isin; &Escr;</sub> &sum;<sub>h &isin; &Hscr;</sub> x<sub>e, h</sub> &middot; (K(h) &minus; c(e))<br>
+    &bull; <strong>Subject to Constraints:</strong><br>
+    &nbsp;&nbsp; 1. Capacity Feasibility: &nbsp;&nbsp;&nbsp; x<sub>e, h</sub> = 1 &implies; K(h) &ge; c(e) &nbsp; (&forall; e &isin; &Escr;, &forall; h &isin; &Hscr;)<br>
+    &nbsp;&nbsp; 2. Conflict Exclusion: &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &forall; h &isin; &Hscr;, &forall; d, &forall; s: &sum;<sub>e: d(e)=d, s(e)=s</sub> x<sub>e, h</sub> &le; A(h, d, s)<br>
+    &nbsp;&nbsp; 3. Unitary Assignment: &nbsp;&nbsp;&nbsp;&nbsp; &sum;<sub>h &isin; &Hscr;</sub> x<sub>e, h</sub> &le; 1 &nbsp; (&forall; e &isin; &Escr;)<br>
+    &bull; <strong>Resolution Strategy:</strong> Sorted in descending order of c(e) (greedy hardest-first bin packing heuristic).
+  </div>
+
   <pre>function allocate(entries, halls, taken) {
   // Sort entries: largest student cohorts placed first (hardest to fit)
   const sorted = entries.slice().sort((a, b) => b.student_count - a.student_count);
@@ -705,14 +767,25 @@
     <p style="font-size: 8.5pt; color: #475569; margin-bottom: 6px;">
       Central command for the Faculty Timetable Committee, Assistant Registrar, and Dean's Office (<code>admin@smarthall.test</code>).
     </p>
-    <ul style="margin: 0; padding-left: 18px; font-size: 8.5pt; line-height: 1.5; color: #334155;">
+    <ul style="margin: 0 0 10px; padding-left: 18px; font-size: 8.5pt; line-height: 1.5; color: #334155;">
       <li><strong>Faculty Stat Monitor:</strong> Real-time tiles showing pending bookings, unplaced lectures, total weekly sessions, and halls.</li>
       <li><strong>Administrative Quick Actions:</strong> 1-click shortcuts to Timetable Setup, Batches & Counts, Time Slots, and User Directory.</li>
       <li><strong>Auto-Allocation Engine:</strong> Triggers the constrained bin-packing algorithm to resolve all unassigned lectures in 1 click.</li>
       <li><strong>Master Timetable & PDF Ingestion:</strong> Coordinates parser for official faculty PDFs with live download publishing.</li>
       <li><strong>New Semester Master Reset:</strong> Interactive modal-protected utility to safely wipe expired semester allocations.</li>
     </ul>
+
+    <div class="screenshot-figure">
+      <img src="report_assets/screenshots/admin_dashboard.png" alt="Admin Control Center Screenshot">
+      <div class="screenshot-caption">
+        <span><strong>Figure 7.1:</strong> Faculty Administrator Control Center (<code>/admin</code>)</span>
+        <span>Real-time stat tiles, pending approvals, and quick actions toolbar</span>
+      </div>
+    </div>
   </div>
+
+  <!-- PAGE BREAK: BATCH REP WORKSPACE -->
+  <div class="page-break"></div>
 
   <div class="role-card rep-card">
     <div class="role-header-line">
@@ -722,14 +795,25 @@
     <p style="font-size: 8.5pt; color: #475569; margin-bottom: 6px;">
       Dedicated dashboard for elected batch reps (e.g. <code>rep.e21@smarthall.test</code> for Batch 25 / E21).
     </p>
-    <ul style="margin: 0; padding-left: 18px; font-size: 8.5pt; line-height: 1.5; color: #334155;">
+    <ul style="margin: 0 0 10px; padding-left: 18px; font-size: 8.5pt; line-height: 1.5; color: #334155;">
       <li><strong>Enrolled Headcount Indicator:</strong> Displays official batch strength (e.g. <em>210 students</em>), automatically enforced during room matching.</li>
       <li><strong>Today's Lecture Schedule:</strong> Chronological timeline of day's classes with doorplate badges (<span class="plate">LH1</span>, <span class="plate">MLT</span>), times, and lecturers.</li>
       <li><strong>Next Lecture Tracker:</strong> Real-time visual status card displaying the class currently in session or next up with room directions.</li>
       <li><strong>Matching Campus Halls:</strong> Automatically filters and highlights only venues meeting the cohort headcount (&ge; 210 seats).</li>
       <li><strong>Batch Timetable Management:</strong> 1-click access to book extra tutorial slots or adjust the batch's weekly schedule.</li>
     </ul>
+
+    <div class="screenshot-figure">
+      <img src="report_assets/screenshots/rep_dashboard.png" alt="Batch Rep Workspace Screenshot">
+      <div class="screenshot-caption">
+        <span><strong>Figure 7.2:</strong> Batch Representative Workspace (<code>/rep</code>)</span>
+        <span>Cohort strength, today's schedule, live next-lecture indicator, and fitting halls</span>
+      </div>
+    </div>
   </div>
+
+  <!-- PAGE BREAK: SOCIETY PRESIDENT PORTAL -->
+  <div class="page-break"></div>
 
   <div class="role-card president-card">
     <div class="role-header-line">
@@ -739,12 +823,20 @@
     <p style="font-size: 8.5pt; color: #475569; margin-bottom: 6px;">
       Event booking and compliance management for student organizations (e.g. <code>ieee@smarthall.test</code> for IEEE Student Branch).
     </p>
-    <ul style="margin: 0; padding-left: 18px; font-size: 8.5pt; line-height: 1.5; color: #334155;">
+    <ul style="margin: 0 0 10px; padding-left: 18px; font-size: 8.5pt; line-height: 1.5; color: #334155;">
       <li><strong>Reservation Pipeline Metrics:</strong> 4-metric tracker for Total Requests, Confirmed Venues, In Review, and Rejected events.</li>
       <li><strong>AI Letter Compliance Guidelines:</strong> Clear instructions on the 6 verification rules evaluated by Claude Opus (Letterhead, Addressee, Counselor Signatures).</li>
       <li><strong>Decision Logs & Booking Audit:</strong> Full status history showing requested venue, date, time slot, and AI rationale notes.</li>
       <li><strong>Auditorium Showcase:</strong> Dedicated venue cards for large gathering spaces (<span class="plate">MLT</span>, <span class="plate">AUD</span>, <span class="plate">DO</span>) with capacities.</li>
     </ul>
+
+    <div class="screenshot-figure">
+      <img src="report_assets/screenshots/president_portal.png" alt="Society President Portal Screenshot">
+      <div class="screenshot-caption">
+        <span><strong>Figure 7.3:</strong> Society President Portal (<code>/president</code>)</span>
+        <span>Reservation pipeline metrics, AI permission letter rules, and large event spaces</span>
+      </div>
+    </div>
   </div>
 
   <!-- PAGE BREAK: MODAL & TEST SUITE -->

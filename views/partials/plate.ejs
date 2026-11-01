@@ -1,0 +1,5 @@
+<%# A hall shown as a room sign: code plate plus where it is. Pass hall = { id, short_code, building, floor }. %>
+<a class="hall-sign" href="/halls/<%= hall.id %>">
+  <span class="plate"><%= hall.short_code %></span>
+  <% if (hall.building) { %><span class="where"><%= hall.building %>, <%= hall.floor %> floor</span><% } %>
+</a>

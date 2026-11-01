@@ -1,0 +1,107 @@
+<dialog id="custom-confirm-modal" class="custom-confirm-modal" aria-labelledby="confirm-modal-title" aria-describedby="confirm-modal-desc">
+  <div class="confirm-modal-card">
+    <button type="button" class="confirm-modal-close" id="confirm-modal-x" aria-label="Close dialog">
+      <%- include('icon', { name: 'close' }) %>
+    </button>
+    <div class="confirm-modal-icon-wrap" id="confirm-modal-icon-wrap">
+      <div class="confirm-modal-icon danger">
+        <%- include('icon', { name: 'trash' }) %>
+      </div>
+    </div>
+    <div class="confirm-modal-body">
+      <h3 id="confirm-modal-title" class="confirm-modal-title">Confirm Deletion</h3>
+      <p id="confirm-modal-desc" class="confirm-modal-desc">Are you sure you want to delete this lecture? This action cannot be undone.</p>
+    </div>
+    <div class="confirm-modal-actions">
+      <button type="button" id="confirm-modal-cancel" class="button quiet">Cancel</button>
+      <button type="button" id="confirm-modal-confirm" class="button danger">Delete</button>
+    </div>
+  </div>
+</dialog>
+
+<script>
+  (function() {
+    const dialog = document.getElementById('custom-confirm-modal');
+    if (!dialog) return;
+
+    const titleEl = document.getElementById('confirm-modal-title');
+    const descEl = document.getElementById('confirm-modal-desc');
+    const confirmBtn = document.getElementById('confirm-modal-confirm');
+    const cancelBtn = document.getElementById('confirm-modal-cancel');
+    const closeBtn = document.getElementById('confirm-modal-x');
+    let pendingForm = null;
+
+    function openConfirm(options) {
+      titleEl.textContent = options.title || 'Confirm Action';
+      descEl.textContent = options.message || 'Are you sure you want to proceed?';
+      confirmBtn.textContent = options.buttonText || 'Delete';
+      if (options.danger === false) {
+        confirmBtn.className = 'button';
+      } else {
+        confirmBtn.className = 'button danger';
+      }
+      dialog.showModal();
+    }
+
+    function closeConfirm() {
+      dialog.close();
+      pendingForm = null;
+    }
+
+    cancelBtn.addEventListener('click', closeConfirm);
+    closeBtn.addEventListener('click', closeConfirm);
+
+    dialog.addEventListener('click', (e) => {
+      const rect = dialog.getBoundingClientRect();
+      if (e.clientX < rect.left || e.clientX > rect.right || e.clientY < rect.top || e.clientY > rect.bottom) {
+        closeConfirm();
+      }
+    });
+
+    confirmBtn.addEventListener('click', () => {
+      if (pendingForm) {
+        pendingForm.dataset.confirmed = 'true';
+        pendingForm.requestSubmit();
+      }
+      closeConfirm();
+    });
+
+    // Intercept forms with data-confirm or transformed onsubmit
+    document.addEventListener('submit', (e) => {
+      const form = e.target;
+      if (form.dataset.confirmed === 'true') {
+        delete form.dataset.confirmed;
+        return;
+      }
+
+      const confirmMsg = form.dataset.confirm || form.querySelector('[data-confirm]')?.dataset.confirm;
+      if (confirmMsg) {
+        e.preventDefault();
+        pendingForm = form;
+        openConfirm({
+          title: form.dataset.confirmTitle || 'Delete Confirmation',
+          message: confirmMsg,
+          buttonText: form.dataset.confirmButton || 'Delete',
+          danger: true,
+        });
+      }
+    });
+
+    // Transform legacy onsubmit="return confirm(...)" forms across the page into our modal
+    document.querySelectorAll('form[onsubmit*="confirm("]').forEach((form) => {
+      const attr = form.getAttribute('onsubmit');
+      const match = attr.match(/confirm\(['"](.+?)['"]\)/);
+      if (match) {
+        form.removeAttribute('onsubmit');
+        form.dataset.confirm = match[1];
+        form.dataset.confirmTitle = match[1].toLowerCase().includes('reject') ? 'Reject Booking'
+          : match[1].toLowerCase().includes('cancel') ? 'Cancel Booking'
+          : match[1].toLowerCase().includes('batch') ? 'Delete Batch'
+          : match[1].toLowerCase().includes('hall') ? 'Delete Hall'
+          : match[1].toLowerCase().includes('user') ? 'Delete User'
+          : match[1].toLowerCase().includes('slot') ? 'Delete Time Slot'
+          : 'Confirm Deletion';
+      }
+    });
+  })();
+</script>

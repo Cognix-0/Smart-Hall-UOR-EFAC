@@ -1,0 +1,12 @@
+<%- include('partials/header') %>
+<h1>Log in</h1>
+<p class="lead">For batch reps, society presidents and the admin. Students don't need an account; the <a href="/">timetable</a> and <a href="/availability">free halls</a> are open to everyone.</p>
+<section class="panel narrow">
+  <% if (error) { %><p class="error" role="alert"><%= error %></p><% } %>
+  <form method="post" action="/login">
+    <label>Email <input type="email" name="email" value="<%= email %>" required autofocus autocomplete="username"></label>
+    <label>Password <input type="password" name="password" required autocomplete="current-password"></label>
+    <div class="form-actions"><button>Log in</button></div>
+  </form>
+</section>
+<%- include('partials/footer') %>

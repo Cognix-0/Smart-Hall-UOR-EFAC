@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light dark">
+  <meta name="theme-color" content="#7b1e33">
+  <title><%= title %> | SmartHall AI</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600&family=Barlow+Condensed:wght@600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+<%
+  // Main links everyone sees, then the tools for the logged-in role
+  const mainLinks = [['/', 'Timetable', 'calendar'], ['/availability', 'Free halls', 'pin'], ['/halls', 'Halls', 'building'], ['/chat', 'Ask SmartHall', 'chat']];
+  const roleLinks = !user ? [] : user.role === 'admin'
+    ? [['/admin', 'Overview'], ['/timetable/manage', 'Timetable setup'], ['/bookings', 'Bookings'], ['/admin/batches', 'Batches'], ['/admin/slots', 'Time slots'], ['/admin/users', 'Users']]
+    : user.role === 'rep'
+      ? [['/bookings/new', 'Book a hall'], ['/bookings', 'My bookings'], ['/timetable/manage', 'Edit my timetable']]
+      : [['/bookings/new', 'Book a hall'], ['/bookings', 'My bookings']];
+  const roleName = user && { admin: 'Admin', rep: 'Batch rep', president: user.society }[user.role];
+  const here = 'aria-current="page"';
+  const current = (href) => (href === '/' ? path === '/' : path === href || path.startsWith(href + '/')) ? here : '';
+  const currentExact = (href) => (path === href ? here : '');
+%>
+<a class="skip" href="#main">Skip to content</a>
+<header class="topbar">
+  <div class="bar">
+    <a class="brand" href="/"><span class="plate">SH</span><span>SmartHall</span></a>
+    <input type="checkbox" id="menu-toggle" class="menu-toggle">
+    <label for="menu-toggle" class="menu-button"><span class="sr-only">Menu</span><%- include('icon', { name: 'menu' }) %></label>
+    <nav class="main-nav" aria-label="Main">
+      <% mainLinks.forEach(([href, text, icon]) => { %>
+        <a href="<%= href %>" <%- current(href) %>><%- include('icon', { name: icon }) %><span><%= text %></span></a>
+      <% }) %>
+      <% if (user) { %>
+        <form method="post" action="/logout" class="inline"><button class="nav-button"><%- include('icon', { name: 'logout' }) %><span>Log out</span></button></form>
+      <% } else { %>
+        <a href="/login" class="nav-login"><%- include('icon', { name: 'login' }) %><span>Log in</span></a>
+      <% } %>
+    </nav>
+  </div>
+  <% if (user) { %>
+  <nav class="role-nav" aria-label="Your tools">
+    <span class="who"><span class="avatar" aria-hidden="true"><%= user.name.charAt(0) %></span><%= user.name === roleName ? user.name : `${user.name}, ${roleName}` %></span>
+    <% roleLinks.forEach(([href, text]) => { %><a href="<%= href %>" <%- currentExact(href) %>><%= text %></a><% }) %>
+  </nav>
+  <% } %>
+</header>
+<main id="main">
+<% if (flash) { %>
+  <div class="flash" role="status">
+    <p><%= flash %></p>
+    <button type="button" class="flash-close" onclick="this.parentElement.remove()"><span class="sr-only">Dismiss</span><%- include('icon', { name: 'close' }) %></button>
+  </div>
+<% } %>

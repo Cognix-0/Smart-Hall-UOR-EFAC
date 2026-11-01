@@ -1,0 +1,114 @@
+<%- include('partials/header') %>
+<%
+  const batch = batches.find(b => b.id === batchId);
+  const todayDow = new Date().getDay() || 7;
+  const hhmm = (t) => t.slice(0, 5);
+  const whenText = !next ? '' : next.now ? 'On now'
+    : next.inDays === 0 ? 'Later today'
+    : next.inDays === 1 ? 'Tomorrow'
+    : DAYS[next.entry.day_of_week];
+%>
+
+<section class="hero">
+  <div class="hero-text">
+    <h1>Where's my lecture?</h1>
+    <p class="lead">See which hall your next lecture is in, how to get there, and which halls on campus are free right now.</p>
+    <form method="get" action="/" class="batch-pick">
+      <label for="batch">Your batch</label>
+      <select id="batch" name="batch" onchange="this.form.submit()">
+        <% batches.forEach(b => { %><option value="<%= b.id %>" <%= b.id === batchId ? 'selected' : '' %>><%= b.name %> (<%= b.student_count %> students)</option><% }) %>
+      </select>
+      <noscript><button>Show</button></noscript>
+    </form>
+  </div>
+
+  <article class="next-card <%= next && next.now ? 'is-now' : '' %>" aria-label="Your next lecture">
+    <% if (!next) { %>
+      <p class="next-when">Your next lecture</p>
+      <p class="next-empty"><%= batch ? `${batch.name} has no lectures in the timetable yet.` : 'Pick a batch to see its next lecture.' %></p>
+    <% } else { const e = next.entry; %>
+      <p class="next-when"><% if (next.now) { %><span class="live-dot"></span><% } %><%= whenText %>, <%= hhmm(e.start_time) %>–<%= hhmm(e.end_time) %></p>
+      <h2 class="next-subject"><%= e.subject %></h2>
+      <% if (e.hall_id) { %>
+        <div class="next-hall">
+          <a class="plate big" href="/halls/<%= e.hall_id %>"><%= e.short_code %></a>
+          <div>
+            <strong><%= e.hall_name %></strong>
+            <span><%= e.building %>, <%= e.floor %> floor</span>
+          </div>
+        </div>
+        <% if (e.directions) { %><p class="next-directions"><%- include('partials/icon', { name: 'pin' }) %> <%= e.directions %></p><% } %>
+      <% } else { %>
+        <p class="next-empty">No hall given yet. Check again after the admin assigns halls.</p>
+      <% } %>
+    <% } %>
+  </article>
+</section>
+
+<section class="board" aria-labelledby="board-title">
+  <div class="board-head">
+    <h2 id="board-title">Right now on campus</h2>
+    <p class="muted"><%- include('partials/icon', { name: 'clock' }) %> <%= fmt.niceDate(now) %>, <%= now.slice(11, 16) %></p>
+  </div>
+  <ul class="board-list">
+    <% board.forEach(({ hall, current, next: upNext }) => { %>
+      <li class="board-row <%= current ? 'in-use' : 'free' %>">
+        <a class="plate" href="/halls/<%= hall.id %>"><%= hall.short_code %></a>
+        <div class="board-now">
+          <span class="light" aria-hidden="true"></span>
+          <% if (current) { %>
+            <strong><%= current.title %></strong>
+            <span class="muted">In use until <%= current.end.slice(0, 10) === now.slice(0, 10) ? current.end.slice(11, 16) : fmt.niceDate(current.end) + ' ' + current.end.slice(11, 16) %></span>
+          <% } else { %>
+            <strong>Free</strong>
+            <span class="muted"><%= upNext ? `Free until ${upNext.start.slice(11, 16)}` : 'Free for the rest of today' %>, <%= hall.capacity %> seats</span>
+          <% } %>
+        </div>
+        <div class="board-next">
+          <% if (upNext) { %><span class="muted">Next</span> <%= upNext.start.slice(11, 16) %> <%= upNext.title %><% } %>
+        </div>
+      </li>
+    <% }) %>
+  </ul>
+  <p class="board-foot"><a href="/availability">See any date</a> or <a href="/chat">ask SmartHall</a> for a hall that fits your class.</p>
+</section>
+
+<section aria-labelledby="week-title">
+  <div class="timetable-section-head">
+    <h2 id="week-title">This week for <%= batch ? batch.name : 'your batch' %></h2>
+    <% if (officialPdf) { %>
+      <a href="/timetables/<%= officialPdf.filename %>" target="_blank" class="button quiet small pdf-badge" title="<%= officialPdf.title || officialPdf.original_name %>">
+        <%- include('partials/icon', { name: 'file' }) %> Official PDF Timetable
+      </a>
+    <% } %>
+  </div>
+  <% if (!entries.length) { %>
+    <div class="panel empty">No lectures in the timetable yet.</div>
+  <% } else { %>
+  <div class="table-wrap">
+  <table class="grid">
+    <thead><tr><th>Time</th><% days.forEach(d => { %><th class="<%= d === todayDow ? 'today' : '' %>"><%= DAYS[d] %><%= d === todayDow ? ' (today)' : '' %></th><% }) %></tr></thead>
+    <tbody>
+    <% slots.forEach(s => { %>
+      <tr>
+        <th scope="row"><%= s.label %></th>
+        <% days.forEach(d => { const e = entries.find(x => x.day_of_week === d && x.time_slot_id === s.id); %>
+          <td class="<%= d === todayDow ? 'today' : '' %>">
+            <% if (e) { %>
+              <div class="class-cell">
+                <strong><%= e.subject %></strong>
+                <% if (e.hall_id) { %>
+                  <%- include('partials/plate', { hall: { id: e.hall_id, short_code: e.short_code, building: e.building, floor: e.floor } }) %>
+                <% } else { %><span class="muted">Hall not given yet</span><% } %>
+              </div>
+            <% } %>
+          </td>
+        <% }) %>
+      </tr>
+    <% }) %>
+    </tbody>
+  </table>
+  </div>
+  <% } %>
+</section>
+<%- include('partials/footer') %>

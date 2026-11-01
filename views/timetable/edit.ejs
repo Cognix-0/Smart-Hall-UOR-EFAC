@@ -1,0 +1,28 @@
+<%- include('../partials/header') %>
+<h1>Edit lecture</h1>
+<p class="lead">Change the day, time or hall. A hall that is already taken or too small is refused with the reason.</p>
+<section class="panel narrow">
+  <% if (error) { %><p class="error" role="alert"><%= error %></p><% } %>
+  <form method="post" action="/timetable/<%= entry.id %>">
+    <% if (user.role === 'admin') { %>
+      <label>Batch
+        <select name="batch_id"><% batches.forEach(b => { %><option value="<%= b.id %>" <%= b.id == entry.batch_id ? 'selected' : '' %>><%= b.name %> (<%= b.student_count %>)</option><% }) %></select>
+      </label>
+    <% } %>
+    <label>Subject <input name="subject" value="<%= entry.subject %>" required maxlength="100"></label>
+    <label>Day
+      <select name="day_of_week"><% [1,2,3,4,5,6,7].forEach(d => { %><option value="<%= d %>" <%= d == entry.day_of_week ? 'selected' : '' %>><%= DAYS[d] %></option><% }) %></select>
+    </label>
+    <label>Time
+      <select name="time_slot_id"><% slots.forEach(s => { %><option value="<%= s.id %>" <%= s.id == entry.time_slot_id ? 'selected' : '' %>><%= s.label %></option><% }) %></select>
+    </label>
+    <label>Hall
+      <select name="hall_id">
+        <option value="">No hall (assign later)</option>
+        <% halls.forEach(h => { %><option value="<%= h.id %>" <%= h.id == entry.hall_id ? 'selected' : '' %>><%= h.name %> (<%= h.capacity %> seats)</option><% }) %>
+      </select>
+    </label>
+    <div class="form-actions"><button>Save changes</button> <a href="/timetable/manage">Cancel</a></div>
+  </form>
+</section>
+<%- include('../partials/footer') %>

@@ -1,0 +1,160 @@
+<%- include('../partials/header') %>
+<h1><%= user.role === 'admin' ? 'Timetable setup' : 'Edit my timetable' %></h1>
+<p class="lead"><%= user.role === 'admin' ? 'Load the weekly lectures, then let SmartHall give each one a hall.' : 'Your batch\'s weekly lectures. When a lecture moves, edit it here and everyone sees the change.' %></p>
+
+<% if (user.role === 'admin') { %>
+<div class="tools">
+  <section class="panel">
+    <h2>Upload timetable (PDF or CSV)</h2>
+    <p class="muted">Upload an official faculty PDF timetable (or CSV). SmartHall extracts lectures, times, and halls to maintain the schedule.</p>
+    <form method="post" action="/timetable/upload" enctype="multipart/form-data">
+      <label>
+        <span class="hint">Target Batch</span>
+        <select name="batch_id">
+          <option value="">Auto-detect from file</option>
+          <% batches.forEach(b => { %><option value="<%= b.id %>"><%= b.name %> (<%= b.student_count %> students)</option><% }) %>
+        </select>
+      </label>
+      <label>
+        <span class="hint">Select PDF or CSV</span>
+        <input type="file" name="file" accept=".pdf,application/pdf,.csv,text/csv" required>
+      </label>
+      <button><%- include('../partials/icon', { name: 'file' }) %> Upload & Maintain Timetable</button>
+    </form>
+
+    <% if (hasProjectPdf) { %>
+      <div class="quick-import-box">
+        <strong>Project PDF Detected:</strong>
+        <p class="muted"><code><%= projectPdfName %></code> is ready in this project folder.</p>
+        <form method="post" action="/timetable/load-project-pdf" class="inline">
+          <button type="submit" class="button quiet small">
+            <%- include('../partials/icon', { name: 'file' }) %> Import <%= projectPdfName %> Now
+          </button>
+        </form>
+      </div>
+    <% } %>
+  </section>
+
+  <% if (timetableFiles && timetableFiles.length) { %>
+  <section class="panel">
+    <h2>Official PDF Timetables</h2>
+    <p class="muted">Currently active official timetable documents published to students and faculty.</p>
+    <ul class="file-list">
+      <% timetableFiles.forEach(f => { %>
+        <li class="file-item">
+          <div>
+            <strong><%= f.title || f.original_name %></strong>
+            <span class="muted">Batch: <%= f.batch_name %> &bull; <%= fmt.niceDate(f.created_at) %></span>
+          </div>
+          <div class="file-actions">
+            <a href="/timetables/<%= f.filename %>" target="_blank" class="button quiet small" title="View PDF">
+              <%- include('../partials/icon', { name: 'file' }) %> View
+            </a>
+            <form method="post" action="/timetable/files/<%= f.id %>/delete" class="inline"
+                  data-confirm="Are you sure you want to remove the official PDF '<%= f.title || f.original_name %>' for <%= f.batch_name %>?"
+                  data-confirm-title="Remove Timetable PDF"
+                  data-confirm-button="Remove PDF">
+              <button class="action-btn delete small" title="Remove PDF">
+                <%- include('../partials/icon', { name: 'trash' }) %>
+                <span>Delete</span>
+              </button>
+            </form>
+          </div>
+        </li>
+      <% }) %>
+    </ul>
+  </section>
+  <% } %>
+
+  <section class="panel">
+    <h2>Give lectures a hall</h2>
+    <p class="muted">Each lecture without a hall gets the smallest free hall that seats the whole batch.</p>
+    <form method="post" action="/timetable/allocate">
+      <label class="check"><input type="checkbox" name="reset" value="1"> Start over and re-assign every lecture</label>
+      <button>Assign halls</button>
+    </form>
+  </section>
+
+  <section class="panel">
+    <h2>Add one lecture</h2>
+    <form method="post" action="/timetable" class="compact">
+      <select name="batch_id" required><% batches.forEach(b => { %><option value="<%= b.id %>"><%= b.name %></option><% }) %></select>
+      <input name="subject" placeholder="Subject" required maxlength="100">
+      <select name="day_of_week"><% [1,2,3,4,5,6,7].forEach(d => { %><option value="<%= d %>"><%= DAYS[d] %></option><% }) %></select>
+      <select name="time_slot_id"><% slots.forEach(s => { %><option value="<%= s.id %>"><%= s.label %></option><% }) %></select>
+      <select name="hall_id"><option value="">Hall: assign later</option><% halls.forEach(h => { %><option value="<%= h.id %>"><%= h.short_code %> (<%= h.capacity %>)</option><% }) %></select>
+      <button>Add lecture</button>
+    </form>
+  </section>
+
+  <section class="panel panel-danger">
+    <h2>New semester reset</h2>
+    <p class="muted">Clear weekly lecture schedules when a new semester starts so you can upload fresh timetables.</p>
+    <form method="post" action="/timetable/reset-all"
+          data-confirm="Are you sure you want to reset the timetable for the new semester? All selected lectures will be permanently deleted."
+          data-confirm-title="Reset Timetable for New Semester"
+          data-confirm-button="Reset Timetable">
+      <label>
+        <span class="hint">Scope</span>
+        <select name="batch_id">
+          <option value="">All Batches (Full Semester Reset)</option>
+          <% batches.forEach(b => { %><option value="<%= b.id %>">Batch <%= b.name %> only</option><% }) %>
+        </select>
+      </label>
+      <label class="check">
+        <input type="checkbox" name="clear_files" value="1" checked> Also remove uploaded official PDF timetables
+      </label>
+      <button type="submit" class="button danger">
+        <%- include('../partials/icon', { name: 'trash' }) %> Reset for New Semester
+      </button>
+    </form>
+  </section>
+</div>
+
+<form method="get" action="/timetable/manage" class="filters">
+  <label>Batch
+    <select name="batch" onchange="this.form.submit()">
+      <option value="">All batches</option>
+      <% batches.forEach(b => { %><option value="<%= b.id %>" <%= b.id === batchFilter ? 'selected' : '' %>><%= b.name %></option><% }) %>
+    </select>
+  </label>
+</form>
+<% } else { %>
+<p class="muted">Need a hall for an extra lecture on one date? <a href="/bookings/new">Book a hall</a> instead.</p>
+<% } %>
+
+<div class="table-wrap">
+<table class="stack">
+  <thead><tr><th>Batch</th><th>Subject</th><th>Day</th><th>Time</th><th>Hall</th><th></th></tr></thead>
+  <tbody>
+  <% entries.forEach(e => { %>
+    <tr>
+      <td data-label="Batch"><%= e.batch %></td>
+      <td data-label="Subject"><%= e.subject %></td>
+      <td data-label="Day"><%= DAYS[e.day_of_week] %></td>
+      <td data-label="Time"><%= e.label %></td>
+      <td data-label="Hall"><% if (e.hall_name) { %><%- include('../partials/plate', { hall: { id: e.hall_id, short_code: e.short_code } }) %><% } else { %><span class="tag pending">No hall yet</span><% } %></td>
+      <td class="actions">
+        <a href="/timetable/<%= e.id %>/edit" class="action-btn edit" title="Edit lecture">
+          <%- include('../partials/icon', { name: 'edit' }) %>
+          <span>Edit</span>
+        </a>
+        <% if (user.role === 'admin') { %>
+          <form method="post" action="/timetable/<%= e.id %>/delete" class="inline"
+                data-confirm="Are you sure you want to delete '<%= e.subject %>' for <%= e.batch %> (<%= DAYS[e.day_of_week] %> <%= e.label %>)?"
+                data-confirm-title="Delete Lecture"
+                data-confirm-button="Delete Lecture">
+            <button type="submit" class="action-btn delete" title="Delete lecture">
+              <%- include('../partials/icon', { name: 'trash' }) %>
+              <span>Delete</span>
+            </button>
+          </form>
+        <% } %>
+      </td>
+    </tr>
+  <% }) %>
+  <% if (!entries.length) { %><tr><td colspan="6" class="muted">No lectures yet.</td></tr><% } %>
+  </tbody>
+</table>
+</div>
+<%- include('../partials/footer') %>

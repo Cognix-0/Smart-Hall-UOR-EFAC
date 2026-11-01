@@ -1,0 +1,41 @@
+<%- include('partials/header') %>
+<% const isToday = date === fmt.today(); %>
+<h1>Free halls on <%= fmt.niceDate(date) %><%= isToday ? ' (today)' : '' %></h1>
+<p class="lead">Green means the hall is free for that slot. Enter your class size to grey out halls that are too small.</p>
+
+<form method="get" action="/availability" class="filters">
+  <div class="day-nav">
+    <a class="button quiet" href="/availability?date=<%= fmt.addDays(date, -1) %>&min=<%= min || '' %>" aria-label="Previous day">‹ <%= fmt.niceDate(fmt.addDays(date, -1)) %></a>
+    <label>Date <input type="date" name="date" value="<%= date %>" required></label>
+    <a class="button quiet" href="/availability?date=<%= fmt.addDays(date, 1) %>&min=<%= min || '' %>" aria-label="Next day"><%= fmt.niceDate(fmt.addDays(date, 1)) %> ›</a>
+  </div>
+  <label>Students <input type="number" name="min" min="0" value="<%= min || '' %>" placeholder="e.g. 120"></label>
+  <button>Show</button>
+  <% if (!isToday) { %><a href="/availability?min=<%= min || '' %>">Back to today</a><% } %>
+</form>
+
+<div class="table-wrap">
+<table class="grid">
+  <thead><tr><th>Hall</th><% slots.forEach(s => { %><th><%= s.label %></th><% }) %></tr></thead>
+  <tbody>
+  <% halls.forEach(h => { const small = min && h.capacity < min; %>
+    <tr class="<%= small ? 'too-small' : '' %>">
+      <th scope="row">
+        <%- include('partials/plate', { hall: { id: h.id, short_code: h.short_code } }) %>
+        <span class="muted"><%= h.capacity %> seats<%= small ? ', too small' : '' %></span>
+      </th>
+      <% slots.forEach(s => { const used = grid[h.id][s.id]; %>
+        <td><% if (used) { %><span class="cell-busy"><%= used %></span><% } else { %><span class="cell-free">Free</span><% } %></td>
+      <% }) %>
+    </tr>
+  <% }) %>
+  </tbody>
+</table>
+</div>
+<div class="legend">
+  <span><span class="dot free"></span>Free</span>
+  <span><span class="dot busy"></span>Lecture or booking (pending ones are marked)</span>
+  <span>Events that run past midnight show in every slot they cover.</span>
+</div>
+<% if (user && user.role !== 'admin') { %><p><a class="button" href="/bookings/new">Book a hall</a></p><% } %>
+<%- include('partials/footer') %>

@@ -1,0 +1,29 @@
+<%- include('../partials/header') %>
+<h1>Batches</h1>
+<p class="lead">Student counts decide which halls are big enough. Edit a row and press Save.</p>
+<section class="panel">
+  <h2>Add batch</h2>
+  <form method="post" action="/admin/batches" class="compact">
+    <input name="name" placeholder="Name, e.g. E25" required maxlength="50">
+    <input type="number" name="student_count" placeholder="Students" required min="1">
+    <button>Add batch</button>
+  </form>
+</section>
+<div class="table-wrap">
+<table>
+  <thead><tr><th>Name</th><th>Students</th><th></th></tr></thead>
+  <tbody>
+  <% batches.forEach(b => { %>
+    <tr>
+      <td><input form="edit-<%= b.id %>" name="name" value="<%= b.name %>" required maxlength="50"></td>
+      <td><input form="edit-<%= b.id %>" type="number" name="student_count" value="<%= b.student_count %>" required min="1"></td>
+      <td class="actions">
+        <form id="edit-<%= b.id %>" method="post" action="/admin/batches/<%= b.id %>" class="inline"><button class="action-btn edit">Save</button></form>
+        <form method="post" action="/admin/batches/<%= b.id %>/delete" class="inline" onsubmit="return confirm('Delete batch <%= b.name %>? This will also remove its whole timetable.')"><button class="action-btn delete">Delete</button></form>
+      </td>
+    </tr>
+  <% }) %>
+  </tbody>
+</table>
+</div>
+<%- include('../partials/footer') %>

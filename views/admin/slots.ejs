@@ -1,0 +1,29 @@
+<%- include('../partials/header') %>
+<h1>Time slots</h1>
+<p class="lead">The teaching periods, the same every weekday. Edit a row and press Save.</p>
+<section class="panel">
+  <h2>Add slot</h2>
+  <form method="post" action="/admin/slots" class="compact">
+    <label>Start <input type="time" name="start_time" required></label>
+    <label>End <input type="time" name="end_time" required></label>
+    <button>Add slot</button>
+  </form>
+</section>
+<div class="table-wrap">
+<table>
+  <thead><tr><th>Start</th><th>End</th><th></th></tr></thead>
+  <tbody>
+  <% slots.forEach(s => { %>
+    <tr>
+      <td><input form="edit-<%= s.id %>" type="time" name="start_time" value="<%= s.start_time.slice(0, 5) %>" required></td>
+      <td><input form="edit-<%= s.id %>" type="time" name="end_time" value="<%= s.end_time.slice(0, 5) %>" required></td>
+      <td class="actions">
+        <form id="edit-<%= s.id %>" method="post" action="/admin/slots/<%= s.id %>" class="inline"><button class="action-btn edit">Save</button></form>
+        <form method="post" action="/admin/slots/<%= s.id %>/delete" class="inline" onsubmit="return confirm('Delete slot <%= s.label %> and every lecture in it?')"><button class="action-btn delete">Delete</button></form>
+      </td>
+    </tr>
+  <% }) %>
+  </tbody>
+</table>
+</div>
+<%- include('../partials/footer') %>

@@ -1,0 +1,39 @@
+<%- include('../partials/header') %>
+<h1>Users</h1>
+<p class="lead">Reps need a batch and society presidents need a society name. Leave the password empty when editing to keep the old one.</p>
+<section class="panel">
+  <h2>Add user</h2>
+  <form method="post" action="/admin/users" class="compact">
+    <input name="name" placeholder="Name" required maxlength="100">
+    <input type="email" name="email" placeholder="Email" required maxlength="100">
+    <input type="password" name="password" placeholder="Password (8+ chars)" required minlength="8">
+    <select name="role"><option value="rep">Rep</option><option value="president">Society president</option><option value="admin">Admin</option></select>
+    <select name="batch_id"><option value="">Batch (reps)</option><% batches.forEach(b => { %><option value="<%= b.id %>"><%= b.name %></option><% }) %></select>
+    <input name="society" placeholder="Society (presidents)" maxlength="100">
+    <button>Add user</button>
+  </form>
+</section>
+<div class="table-wrap">
+<table>
+  <thead><tr><th>Name</th><th>Email</th><th>Role</th><th>Batch</th><th>Society</th><th>New password</th><th></th></tr></thead>
+  <tbody>
+  <% users.forEach(u => { const f = 'edit-' + u.id; %>
+    <tr>
+      <td><input form="<%= f %>" name="name" value="<%= u.name %>" required maxlength="100"></td>
+      <td><input form="<%= f %>" type="email" name="email" value="<%= u.email %>" required maxlength="100"></td>
+      <td><select form="<%= f %>" name="role"><% ['rep', 'president', 'admin'].forEach(r => { %><option <%= u.role === r ? 'selected' : '' %>><%= r %></option><% }) %></select></td>
+      <td><select form="<%= f %>" name="batch_id"><option value="">-</option><% batches.forEach(b => { %><option value="<%= b.id %>" <%= b.id === u.batch_id ? 'selected' : '' %>><%= b.name %></option><% }) %></select></td>
+      <td><input form="<%= f %>" name="society" value="<%= u.society || '' %>" maxlength="100"></td>
+      <td><input form="<%= f %>" type="password" name="password" minlength="8" placeholder="unchanged"></td>
+      <td class="actions">
+        <form id="<%= f %>" method="post" action="/admin/users/<%= u.id %>" class="inline"><button class="link">Save</button></form>
+        <% if (u.id !== user.id) { %>
+          <form method="post" action="/admin/users/<%= u.id %>/delete" class="inline" onsubmit="return confirm('Delete user <%= u.name %> and their bookings?')"><button class="action-btn delete">Delete</button></form>
+        <% } %>
+      </td>
+    </tr>
+  <% }) %>
+  </tbody>
+</table>
+</div>
+<%- include('../partials/footer') %>

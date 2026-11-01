@@ -1,0 +1,55 @@
+<%- include('../partials/header') %>
+<h1>Good to see you, <%= user.name %></h1>
+<p class="lead">Here is what needs your attention.</p>
+
+<div class="stats">
+  <a class="stat <%= counts.pending ? 'attention' : '' %>" href="/bookings?status=pending"><strong><%= counts.pending %></strong><span>bookings waiting for you</span></a>
+  <a class="stat <%= counts.unplaced ? 'attention' : '' %>" href="/timetable/manage"><strong><%= counts.unplaced %></strong><span>lectures without a hall</span></a>
+  <a class="stat" href="/timetable/manage"><strong><%= counts.lectures %></strong><span>weekly lectures</span></a>
+  <a class="stat" href="/halls"><strong><%= counts.halls %></strong><span>halls</span></a>
+  <a class="stat" href="/admin/batches"><strong><%= counts.batches %></strong><span>batches</span></a>
+</div>
+
+<% if (counts.unplaced) { %>
+  <form method="post" action="/timetable/allocate" class="panel">
+    <p style="margin-top:0"><%= counts.unplaced %> lecture<%= counts.unplaced === 1 ? '' : 's' %> still need<%= counts.unplaced === 1 ? 's' : '' %> a hall. SmartHall can give each one the smallest free hall that fits.</p>
+    <button>Assign halls</button>
+  </form>
+<% } %>
+
+<h2>Waiting for you</h2>
+<% if (!pending.length) { %>
+  <div class="panel empty">Nothing is waiting. Society bookings whose letter check could not run show up here.</div>
+<% } else { %>
+<div class="table-wrap">
+<table class="stack">
+  <thead><tr><th>When</th><th>Hall</th><th>Society</th><th>Purpose</th><th><span class="sr-only">Actions</span></th></tr></thead>
+  <tbody>
+  <% pending.forEach(b => { %>
+    <tr>
+      <td data-label="When"><%= fmt.niceRange(b.start_at, b.end_at) %></td>
+      <td data-label="Hall"><%- include('../partials/plate', { hall: { id: b.hall_id, short_code: b.short_code } }) %></td>
+      <td data-label="Society"><%= b.society %></td>
+      <td data-label="Purpose"><%= b.purpose %><% if (b.ai_reason) { %><small class="ai-note"><%= b.ai_reason %></small><% } %></td>
+      <td class="actions">
+        <% if (b.letter_file) { %><a href="/bookings/<%= b.id %>/letter" target="_blank" rel="noopener" class="action-btn edit">View letter</a><% } %>
+        <form method="post" action="/bookings/<%= b.id %>/status" class="inline"><input type="hidden" name="status" value="approved"><button class="action-btn edit">Approve</button></form>
+        <form method="post" action="/bookings/<%= b.id %>/status" class="inline" onsubmit="return confirm('Reject this booking?')"><input type="hidden" name="status" value="rejected"><button class="action-btn delete">Reject</button></form>
+      </td>
+    </tr>
+  <% }) %>
+  </tbody>
+</table>
+</div>
+<% } %>
+
+<h2>Coming up</h2>
+<% if (!upcoming.length) { %>
+  <p class="muted">No confirmed bookings coming up.</p>
+<% } else { %>
+<ul class="plain-list">
+  <% upcoming.forEach(b => { %><li><strong><%= fmt.niceRange(b.start_at, b.end_at) %></strong>, <%= b.short_code %>, <%= b.purpose %></li><% }) %>
+</ul>
+<p><a href="/bookings">All bookings</a></p>
+<% } %>
+<%- include('../partials/footer') %>

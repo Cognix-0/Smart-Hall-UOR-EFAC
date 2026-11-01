@@ -165,7 +165,75 @@ A prominent characteristic of SmartHall AI is its **custom, high-contrast dark v
 
 ---
 
-## 7. Custom Confirmation Modal UI
+---
+
+## 7. Dedicated Role-Based User Interfaces
+
+To eliminate operational friction and prevent user confusion, SmartHall AI replaces generic monolithic dashboards with **specialized, role-tailored workspaces** for each authenticated user type: **System Administrator**, **Batch Representative (Rep)**, and **Society President**.
+
+```
+                        User Login (POST /login)
+                                   │
+                     Session Verification & Role Check
+                                   │
+        ┌──────────────────────────┼──────────────────────────┐
+        ▼                          ▼                          ▼
+  role === 'admin'           role === 'rep'           role === 'president'
+        │                          │                          │
+        ▼                          ▼                          ▼
+Admin Dashboard (/admin)    Batch Workspace (/rep)    Society Portal (/president)
+- Master Allocation Engine  - Cohort Headcount Card  - Event Pipeline Tracker
+- Unplaced Lecture Resolv.  - Today's Class Timeline  - AI Letter Guidelines
+- Faculty PDF Ingestion     - Next Lecture Countdown  - Letter Compliance Logs
+- New Semester Wipes        - Fitting Halls (>= size) - Large Auditoriums Showcase
+- Batch & Slot Controls     - Cohort Timetable Grid   - Ad-Hoc Event Bookings
+```
+
+### 7.1 Administrator Control Center (`/admin`)
+- **Target Persona:** Faculty Timetable Committee, Assistant Registrar, Dean's Office (`admin@smarthall.test`).
+- **Visual Identity:** Crimson accent header (`.role-banner.admin-banner`) with `SYSTEM ADMINISTRATOR | Full Faculty Control` badges.
+- **Key Modules & Capabilities:**
+  1. **Faculty Stat Monitor:** Real-time summary tiles showing pending booking requests, unplaced lectures requiring hall assignments, active weekly lectures, registered lecture halls, and enrolled academic batches.
+  2. **One-Click Quick Actions Toolbar:** Instant navigation to *Timetable Setup*, *Batches & Counts*, *Time Slots*, *User Directory*, and *Campus Halls*.
+  3. **Auto-Allocation Engine Panel:** Dispatches the constrained optimization algorithm to automatically pair all unplaced lectures with the smallest fitting free halls.
+  4. **Master Timetable & PDF Ingestion:** Administrative controls to upload faculty PDFs, run coordinate extractions, and publish downloadable schedules.
+  5. **New Semester Reset Tool:** Modal-protected utility for wiping expired timetable schedules selectively per batch or across the faculty.
+  6. **Booking Approval Pipeline:** Direct review of society requests with AI permission letter verification summaries.
+
+### 7.2 Batch Representative Workspace (`/rep`)
+- **Target Persona:** Elected Undergraduate Cohort Representatives, e.g., E21 / E22 Reps (`rep.e21@smarthall.test`).
+- **Visual Identity:** Royal blue accent header (`.role-banner.rep-banner`) displaying `BATCH REPRESENTATIVE` and batch identification badge (e.g., `Batch 25 (E21)`).
+- **Key Modules & Capabilities:**
+  1. **Cohort Metric Cards:**
+     - **Enrolled Cohort Size:** Displays official student headcount (e.g., *210 students*), automatically enforced during room allocations.
+     - **Today's Lecture Counter:** Dynamic count of scheduled lectures for the current weekday.
+     - **Real-Time Next Lecture Tracker:** Live indicator displaying what lecture is currently active or next up, including hall location.
+     - **Active Bookings Tracker:** Direct link to reservations made by this representative.
+  2. **Action Toolbar:** 1-click shortcuts to *Book Extra Lecture / Tutorial*, *Edit Batch Timetable*, *View Faculty PDF*, and *Check Available Halls*.
+  3. **Today's Lecture Timeline:** Chronological list of day's classes with doorplate badges (`LH1`, `MLT`), time slots, module names, and lecturers.
+  4. **Matching Campus Halls:** Automatically filters and displays only halls that physically fit the batch's headcount (capacity $\ge$ student count), preventing reps from requesting undersized rooms.
+  5. **Batch Timetable Grid:** Scoped weekly schedule view dedicated exclusively to their cohort.
+
+### 7.3 Society President Portal (`/president`)
+- **Target Persona:** Student Organization Leaders, e.g., IEEE Student Branch, Mechanical Engineering Society (`ieee@smarthall.test`).
+- **Visual Identity:** University gold accent header (`.role-banner.president-banner`) displaying `SOCIETY PRESIDENT` and organization badge (e.g., `IEEE Student Branch`).
+- **Key Modules & Capabilities:**
+  1. **Event Reservation Pipeline:** Four-metric tracker showing *Total Society Reservations*, *Confirmed Venues*, *Under Review*, and *Rejected/Rescheduled* requests.
+  2. **Event Actions Toolbar:** 1-click access to *Book Venue for Society Event*, *Ask SmartHall Assistant*, and *Browse Large Event Halls*.
+  3. **AI Letter Compliance Guidelines:** Interactive guidance card grid explaining the 6 verification rules required by Claude Opus (Official Letterhead, Dean/AR Addressee, Senior Treasurer Endorsement, Accurate Date/Time matching, and Visual Signatures).
+  4. **Society Booking History & AI Decision Logs:** Audit table listing upcoming society events with live status badges and detailed AI decision notes explaining why requests were approved or flagged.
+  5. **Auditoriums & Large Gathering Spaces:** Dedicated showcase cards for large event venues (MLT, Faculty Auditorium, Drawing Office) with seating capacities and sound system amenities.
+
+### 7.4 Dynamic Role-Tailored Navigation
+The application header partial (`views/partials/header.ejs`) dynamically restructures its navigation links based on session authentication:
+- **Public / Students:** *Timetable*, *Free halls*, *Halls*, *Ask SmartHall*, and *Log in*.
+- **Admin:** Adds *Dashboard (`/admin`)*, *Timetable setup*, *Bookings*, *Batches*, *Time slots*, and *Users*.
+- **Batch Rep:** Adds *Dashboard (`/rep`)*, *My Timetable*, *Book a hall*, and *My bookings*.
+- **Society President:** Adds *Dashboard (`/president`)*, *Book a hall*, and *My bookings*.
+
+---
+
+## 8. Custom Confirmation Modal UI
 
 To prevent accidental deletions without relying on browser-native `confirm()` popups, the platform features a custom HTML5 `<dialog>` modal:
 - **Glassmorphic Backdrop:** Deep dark blurred overlay (`backdrop-filter: blur(8px)`).
@@ -176,7 +244,7 @@ To prevent accidental deletions without relying on browser-native `confirm()` po
 
 ---
 
-## 8. Verification & Testing Results
+## 9. Verification & Testing Results
 
 SmartHall AI includes built-in unit tests verifying core algorithms:
 - `campus board shows what is in each hall now and next`: **PASS**
@@ -188,5 +256,5 @@ SmartHall AI includes built-in unit tests verifying core algorithms:
 
 ---
 
-## 9. Conclusion
-SmartHall AI demonstrates how modern, lightweight web technologies and targeted AI integrations can solve real-world logistical bottlenecks in higher education institutions. By harmonizing algorithmic allocation, automated document parsing, multimodal AI verification, and an intentional user interface, the system provides the Faculty of Engineering, University of Ruhuna, with a dependable, state-of-the-art campus infrastructure management platform.
+## 10. Conclusion
+SmartHall AI demonstrates how modern, lightweight web technologies and targeted AI integrations can solve real-world logistical bottlenecks in higher education institutions. By harmonizing algorithmic allocation, automated document parsing, multimodal AI verification, dedicated role-based interfaces, and an intentional user interface, the system provides the Faculty of Engineering, University of Ruhuna, with a dependable, state-of-the-art campus infrastructure management platform.

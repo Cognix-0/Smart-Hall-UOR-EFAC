@@ -218,6 +218,32 @@
     .badge.president { background: #fef3c7; color: #92400e; }
     .badge.success { background: #dcfce7; color: #166534; }
 
+    /* Role Cards */
+    .role-card {
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      padding: 12px 14px;
+      background: #ffffff;
+      margin-bottom: 12px;
+      break-inside: avoid;
+    }
+    .role-card.admin-card { border-left: 5px solid #991b1b; }
+    .role-card.rep-card { border-left: 5px solid #0284c7; }
+    .role-card.president-card { border-left: 5px solid #d97706; }
+    .role-header-line {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 6px;
+    }
+    .role-header-line h3 { margin: 0; font-size: 10.5pt; color: #0f172a; }
+    .pill-tag {
+      font-size: 7.5pt; font-weight: 700; text-transform: uppercase; padding: 2px 6px; border-radius: 4px;
+    }
+    .pill-tag.admin { background: #fee2e2; color: #991b1b; }
+    .pill-tag.rep { background: #e0f2fe; color: #0369a1; }
+    .pill-tag.president { background: #fef3c7; color: #b45309; }
+
     /* Cards & Boxes */
     .callout {
       border-left: 4px solid #7b1e33;
@@ -653,17 +679,89 @@
     </div>
   </div>
 
-  <h2>6.2 Custom Confirmation Modal UI</h2>
+  <!-- PAGE BREAK: ROLE-BASED INTERFACES -->
+  <div class="page-break"></div>
+
+  <h1><span class="sec-num">07.</span> Dedicated Role-Based User Interfaces</h1>
   <p>
-    Rather than relying on browser-native <code>window.confirm()</code> popups (which are unstyled and interrupt the main thread), SmartHall AI implements an HTML5 <code>&lt;dialog&gt;</code> modal:
+    To eliminate operational friction and cognitive overload, SmartHall AI replaces generic monolithic dashboards with <strong>specialized, role-tailored workspaces</strong> for each authenticated persona: <strong>System Administrator</strong>, <strong>Batch Representative (Rep)</strong>, and <strong>Society President</strong>.
+  </p>
+
+  <div class="diagram-box">
+    <strong>Authentication Dispatching Pipeline</strong><br><br>
+    <code style="background: transparent; color: #0f172a; font-weight: 600;">
+      POST /login &rarr; Session Cookie Established &rarr; Inspect req.session.user.role<br>
+      &bull; 'admin' &rarr; Redirects to /admin (Faculty Control Center)<br>
+      &bull; 'rep' &rarr; Redirects to /rep (Cohort Lecture Schedule & Matching Halls)<br>
+      &bull; 'president' &rarr; Redirects to /president (Society Venue Hub & Letter Decisioning)
+    </code>
+  </div>
+
+  <div class="role-card admin-card">
+    <div class="role-header-line">
+      <h3>Faculty Administrator Dashboard (<code>/admin</code>)</h3>
+      <span class="pill-tag admin">System Administrator &bull; Faculty Governance</span>
+    </div>
+    <p style="font-size: 8.5pt; color: #475569; margin-bottom: 6px;">
+      Central command for the Faculty Timetable Committee, Assistant Registrar, and Dean's Office (<code>admin@smarthall.test</code>).
+    </p>
+    <ul style="margin: 0; padding-left: 18px; font-size: 8.5pt; line-height: 1.5; color: #334155;">
+      <li><strong>Faculty Stat Monitor:</strong> Real-time tiles showing pending bookings, unplaced lectures, total weekly sessions, and halls.</li>
+      <li><strong>Administrative Quick Actions:</strong> 1-click shortcuts to Timetable Setup, Batches & Counts, Time Slots, and User Directory.</li>
+      <li><strong>Auto-Allocation Engine:</strong> Triggers the constrained bin-packing algorithm to resolve all unassigned lectures in 1 click.</li>
+      <li><strong>Master Timetable & PDF Ingestion:</strong> Coordinates parser for official faculty PDFs with live download publishing.</li>
+      <li><strong>New Semester Master Reset:</strong> Interactive modal-protected utility to safely wipe expired semester allocations.</li>
+    </ul>
+  </div>
+
+  <div class="role-card rep-card">
+    <div class="role-header-line">
+      <h3>Batch Representative Workspace (<code>/rep</code>)</h3>
+      <span class="pill-tag rep">Batch Representative &bull; Cohort Workspace</span>
+    </div>
+    <p style="font-size: 8.5pt; color: #475569; margin-bottom: 6px;">
+      Dedicated dashboard for elected batch reps (e.g. <code>rep.e21@smarthall.test</code> for Batch 25 / E21).
+    </p>
+    <ul style="margin: 0; padding-left: 18px; font-size: 8.5pt; line-height: 1.5; color: #334155;">
+      <li><strong>Enrolled Headcount Indicator:</strong> Displays official batch strength (e.g. <em>210 students</em>), automatically enforced during room matching.</li>
+      <li><strong>Today's Lecture Schedule:</strong> Chronological timeline of day's classes with doorplate badges (<span class="plate">LH1</span>, <span class="plate">MLT</span>), times, and lecturers.</li>
+      <li><strong>Next Lecture Tracker:</strong> Real-time visual status card displaying the class currently in session or next up with room directions.</li>
+      <li><strong>Matching Campus Halls:</strong> Automatically filters and highlights only venues meeting the cohort headcount (&ge; 210 seats).</li>
+      <li><strong>Batch Timetable Management:</strong> 1-click access to book extra tutorial slots or adjust the batch's weekly schedule.</li>
+    </ul>
+  </div>
+
+  <div class="role-card president-card">
+    <div class="role-header-line">
+      <h3>Society President Portal (<code>/president</code>)</h3>
+      <span class="pill-tag president">Society President &bull; Event Operations</span>
+    </div>
+    <p style="font-size: 8.5pt; color: #475569; margin-bottom: 6px;">
+      Event booking and compliance management for student organizations (e.g. <code>ieee@smarthall.test</code> for IEEE Student Branch).
+    </p>
+    <ul style="margin: 0; padding-left: 18px; font-size: 8.5pt; line-height: 1.5; color: #334155;">
+      <li><strong>Reservation Pipeline Metrics:</strong> 4-metric tracker for Total Requests, Confirmed Venues, In Review, and Rejected events.</li>
+      <li><strong>AI Letter Compliance Guidelines:</strong> Clear instructions on the 6 verification rules evaluated by Claude Opus (Letterhead, Addressee, Counselor Signatures).</li>
+      <li><strong>Decision Logs & Booking Audit:</strong> Full status history showing requested venue, date, time slot, and AI rationale notes.</li>
+      <li><strong>Auditorium Showcase:</strong> Dedicated venue cards for large gathering spaces (<span class="plate">MLT</span>, <span class="plate">AUD</span>, <span class="plate">DO</span>) with capacities.</li>
+    </ul>
+  </div>
+
+  <!-- PAGE BREAK: MODAL & TEST SUITE -->
+  <div class="page-break"></div>
+
+  <h1><span class="sec-num">08.</span> Custom Confirmation Modal UI</h1>
+  <p>
+    Rather than relying on browser-native <code>window.confirm()</code> popups (which are unstyled and interrupt the main JavaScript thread), SmartHall AI implements an HTML5 <code>&lt;dialog&gt;</code> modal:
   </p>
   <ul>
     <li><strong>Dark Glass Backdrop:</strong> Semi-transparent overlay with <code>backdrop-filter: blur(8px)</code>.</li>
     <li><strong>Contextual Danger Indicators:</strong> Circular red badge with trash SVG icon and explicit deletion details (e.g., <em>"Are you sure you want to delete 'IS2101 Mathematics' for 27 (Mon 08:00&ndash;10:00)?"</em>).</li>
     <li><strong>Accessibility:</strong> Full keyboard trapping, <code>Esc</code> key dismissal, and backdrop click-to-close.</li>
+    <li><strong>Universal Safeguard:</strong> Protects timetable entries, batches, time slots, campus halls, bookings, and semester resets.</li>
   </ul>
 
-  <h1><span class="sec-num">07.</span> Verification & Automated Test Suite</h1>
+  <h1><span class="sec-num">09.</span> Verification & Automated Test Suite</h1>
   <p>
     SmartHall AI includes a comprehensive Node.js native test suite (<code>node --test</code>) in <code>test/logic.test.js</code>:
   </p>

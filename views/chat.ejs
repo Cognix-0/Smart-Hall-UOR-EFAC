@@ -1,0 +1,48 @@
+<%- include('partials/header') %>
+<% const tomorrow = fmt.niceDate(fmt.addDays(fmt.today(), 1)); %>
+<h1>Ask SmartHall</h1>
+<p class="lead">Ask which halls are free. Give a date, a time and how many students, and get the free halls with directions.</p>
+<section class="panel chat">
+  <div id="log" aria-live="polite">
+    <p class="bot">Hi! Which hall do you need? For example: "free halls tomorrow at 10am for 120 students".</p>
+  </div>
+  <div class="suggestions" aria-label="Example questions">
+    <button type="button">Free halls today at 2pm for 60 students</button>
+    <button type="button">Hall tomorrow at 10am for 120 students</button>
+    <button type="button">Free halls on <%= tomorrow.slice(4) %> at 8am for 180 students</button>
+  </div>
+  <form id="ask">
+    <label for="message" class="sr-only">Your question</label>
+    <input id="message" maxlength="300" placeholder="Type your question" required autocomplete="off">
+    <button>Ask</button>
+  </form>
+</section>
+<script>
+  const log = document.getElementById('log');
+  const input = document.getElementById('message');
+  function say(text, who) {
+    const p = document.createElement('p');
+    p.className = who;
+    p.textContent = text; // textContent, never innerHTML: replies may contain user text
+    log.appendChild(p);
+    log.scrollTop = log.scrollHeight;
+  }
+  async function ask(message) {
+    say(message, 'me');
+    try {
+      const res = await fetch('/chat', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ message }) });
+      say((await res.json()).reply, 'bot');
+    } catch {
+      say('Could not reach the server. Check your connection and ask again.', 'bot');
+    }
+  }
+  document.getElementById('ask').addEventListener('submit', (e) => {
+    e.preventDefault();
+    const message = input.value.trim();
+    if (!message) return;
+    input.value = '';
+    ask(message);
+  });
+  document.querySelectorAll('.suggestions button').forEach((b) => b.addEventListener('click', () => ask(b.textContent)));
+</script>
+<%- include('partials/footer') %>

@@ -1,0 +1,9 @@
+# Local MySQL just for SmartHall (Homebrew mysqld). Start it with: npm run db
+# Port 3307 so it runs beside any other MySQL on 3306.
+[mysqld]
+datadir = /opt/homebrew/var/mysql-smarthall
+port = 3307
+bind-address = 127.0.0.1
+socket = /tmp/mysql-smarthall.sock
+mysqlx = OFF
+log-error = /opt/homebrew/var/mysql-smarthall/error.log
